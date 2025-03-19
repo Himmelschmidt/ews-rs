@@ -3,11 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use serde::Deserialize;
-use xml_struct::{XmlSerialize, XmlSerializeAttr};
+use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation,
-    OperationResponse, ResponseClass, ResponseCode,
+    OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder,
 };
 
 /// The traversal type for a FindItem operation.
@@ -43,6 +43,16 @@ pub struct FindItem {
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/parentfolderids>
     pub parent_folder_ids: Vec<BaseFolderId>,
+    
+    /// The restriction or query used to filter items.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/restriction>
+    pub restriction: Option<Restriction>,
+    
+    /// Defines how items are sorted in the response.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/sortorder>
+    pub sort_order: Option<SortOrder>,
 }
 
 impl Operation for FindItem {
