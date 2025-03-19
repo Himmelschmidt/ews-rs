@@ -1822,6 +1822,30 @@ pub enum SortDirection {
     Descending,
 }
 
+// Implement XmlSerialize for Box<SearchExpression>
+impl XmlSerialize for Box<SearchExpression> {
+    fn serialize_as_element<W>(
+        &self,
+        writer: &mut quick_xml::Writer<W>,
+        name: &str,
+    ) -> Result<(), xml_struct::Error>
+    where
+        W: std::io::Write,
+    {
+        self.as_ref().serialize_as_element(writer, name)
+    }
+
+    fn serialize_child_nodes<W>(
+        &self,
+        writer: &mut quick_xml::Writer<W>,
+    ) -> Result<(), xml_struct::Error>
+    where
+        W: std::io::Write,
+    {
+        self.as_ref().serialize_child_nodes(writer)
+    }
+}
+
 /// Structured data for diagnosing or responding to an EWS error.
 ///
 /// Because the possible contents of this field are not documented, any XML
