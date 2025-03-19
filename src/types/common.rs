@@ -1721,7 +1721,7 @@ pub enum SearchExpression {
     Not {
         /// The search expression to negate.
         #[xml_struct(flatten)]
-        expression: Box<SearchExpression>,
+        expression: SearchExpression,
     },
 
     /// Represents a search expression that performs a logical OR operation on the search expressions it contains.
