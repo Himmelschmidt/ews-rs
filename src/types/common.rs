@@ -1574,6 +1574,254 @@ pub struct InternetMessageHeader {
     pub value: String,
 }
 
+/// Represents a restriction or query used to filter items or folders.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/restriction>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct Restriction {
+    /// The search expression to use for filtering.
+    #[xml_struct(ns_prefix = "t")]
+    pub search_expression: SearchExpression,
+}
+
+/// Represents a search expression for filtering items or folders.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/searchexpression>
+#[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(variant_ns_prefix = "t")]
+pub enum SearchExpression {
+    /// Represents a search expression that enables you to perform a Boolean AND operation
+    /// between two or more search expressions.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/and>
+    And {
+        /// The search expressions to combine with AND.
+        #[xml_struct(flatten)]
+        expressions: Vec<SearchExpression>,
+    },
+
+    /// Represents a search expression that determines whether a given property
+    /// contains the supplied constant string value.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/contains>
+    Contains {
+        /// The type of containment to use for the search.
+        #[xml_struct(attribute)]
+        containment_mode: ContainmentMode,
+
+        /// The comparison type to use for the search.
+        #[xml_struct(attribute)]
+        containment_comparison: ContainmentComparison,
+
+        /// The property to search.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that returns true if the supplied property exists on an item.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/exists>
+    Exists {
+        /// The property to check for existence.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if they are equal.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/isequalto>
+    IsEqualTo {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if the property is greater than the value.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/isgreaterthan>
+    IsGreaterThan {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if the property is greater than or equal to the value.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/isgreaterthanorequalto>
+    IsGreaterThanOrEqualTo {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if the property is less than the value.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/islessthan>
+    IsLessThan {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if the property is less than or equal to the value.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/islessthanorequalto>
+    IsLessThanOrEqualTo {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that compares a property with a constant value
+    /// and returns true if the values are not the same.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/isnotequalto>
+    IsNotEqualTo {
+        /// The property to compare.
+        #[xml_struct(ns_prefix = "t")]
+        field_uri: PathToElement,
+
+        /// The constant value to compare with.
+        #[xml_struct(ns_prefix = "t")]
+        constant: Constant,
+    },
+
+    /// Represents a search expression that negates the Boolean value of the search expression it contains.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/not>
+    Not {
+        /// The search expression to negate.
+        #[xml_struct(flatten)]
+        expression: Box<SearchExpression>,
+    },
+
+    /// Represents a search expression that performs a logical OR operation on the search expressions it contains.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/or>
+    Or {
+        /// The search expressions to combine with OR.
+        #[xml_struct(flatten)]
+        expressions: Vec<SearchExpression>,
+    },
+}
+
+/// Represents a constant value used in search expressions.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/constant>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct Constant {
+    /// The value of the constant.
+    #[xml_struct(attribute)]
+    pub value: String,
+}
+
+/// Defines how a string property is searched for a specific value.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/containmentmode>
+#[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum ContainmentMode {
+    /// The comparison is between the exact string and the content.
+    FullString,
+    /// The comparison is between the prefix and the content.
+    Prefixed,
+    /// The comparison is between the substring and the content.
+    Substring,
+    /// The comparison is between the prefix on individual words in the content.
+    PrefixOnWords,
+    /// The comparison is between the exact phrase and the content.
+    ExactPhrase,
+}
+
+/// Defines whether a search is exact or fuzzy.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/containmentcomparison>
+#[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum ContainmentComparison {
+    /// The comparison is exact.
+    Exact,
+    /// The comparison ignores casing.
+    IgnoreCase,
+    /// The comparison ignores non-spacing characters.
+    IgnoreNonSpacingCharacters,
+    /// The comparison ignores casing and non-spacing characters.
+    IgnoreCaseAndNonSpacingCharacters,
+    /// The comparison uses loose matching.
+    Loose,
+    /// The comparison uses loose matching and ignores casing.
+    LooseAndIgnoreCase,
+    /// The comparison uses loose matching and ignores non-spacing characters.
+    LooseAndIgnoreNonSpace,
+    /// The comparison uses loose matching and ignores casing and non-spacing characters.
+    LooseAndIgnoreCaseAndIgnoreNonSpace,
+}
+
+/// Defines how items are sorted in a FindItem request.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/sortorder>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct SortOrder {
+    /// The fields by which to sort.
+    #[xml_struct(ns_prefix = "t")]
+    pub field_order: Vec<FieldOrder>,
+}
+
+/// Represents a single field by which to sort results and indicates the direction for the sort.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/fieldorder>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct FieldOrder {
+    /// The direction of the sort.
+    #[xml_struct(attribute)]
+    pub order: SortDirection,
+
+    /// The field to sort by.
+    #[xml_struct(ns_prefix = "t")]
+    pub field_uri: PathToElement,
+}
+
+/// The direction of a sort.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/order-sortordertype>
+#[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum SortDirection {
+    /// Sort in ascending order.
+    Ascending,
+    /// Sort in descending order.
+    Descending,
+}
+
 /// Structured data for diagnosing or responding to an EWS error.
 ///
 /// Because the possible contents of this field are not documented, any XML
