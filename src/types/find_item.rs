@@ -3,8 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use serde::Deserialize;
-use xml_struct::XmlSerialize;
-use xml_struct_derive::XmlSerialize;
+use xml_struct::{XmlSerialize, XmlSerializeAttr};
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation, OperationResponse,
@@ -28,6 +27,12 @@ impl std::fmt::Display for Traversal {
             Self::Shallow => write!(f, "Shallow"),
             Self::SoftDeleted => write!(f, "SoftDeleted"),
         }
+    }
+}
+
+impl XmlSerializeAttr for Traversal {
+    fn serialize_attr(&self) -> String {
+        self.to_string()
     }
 }
 
