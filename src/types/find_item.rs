@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use serde::Deserialize;
+use xml_struct::XmlSerialize;
+use xml_struct_derive::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation, ResponseClass,
-    ResponseCode,
+    types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation, OperationResponse,
+    ResponseClass, ResponseCode,
 };
 
 /// The traversal type for a FindItem operation.
@@ -32,7 +34,7 @@ impl std::fmt::Display for Traversal {
 /// The FindItem operation searches for items that are located in a user's mailbox.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, XmlSerialize)]
 pub struct FindItem {
     /// The traversal type for the search.
     ///
@@ -69,6 +71,8 @@ impl EnvelopeBodyContents for FindItem {
 pub struct FindItemResponse {
     pub response_messages: ResponseMessages,
 }
+
+impl OperationResponse for FindItemResponse {}
 
 impl EnvelopeBodyContents for FindItemResponse {
     fn name() -> &'static str {
