@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use quick_xml::events::BytesStart;
 use serde::Deserialize;
 use xml_struct::{XmlSerialize, XmlSerializeAttr};
 
@@ -31,8 +32,8 @@ impl std::fmt::Display for Traversal {
 }
 
 impl XmlSerializeAttr for Traversal {
-    fn serialize_attr(&self) -> String {
-        self.to_string()
+    fn serialize_as_attribute(&self, start: &mut quick_xml::events::BytesStart<'_>, name: &str) {
+        start.push_attribute((name, self.to_string().as_str()));
     }
 }
 
