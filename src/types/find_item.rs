@@ -5,8 +5,8 @@
 use serde::Deserialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, DistinguishedFolderId, ItemId, ItemShape,
-    Operation, ResponseClass, ResponseCode,
+    types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation, ResponseClass,
+    ResponseCode,
 };
 
 /// The traversal type for a FindItem operation.
