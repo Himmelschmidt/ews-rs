@@ -1597,7 +1597,7 @@ pub enum SearchExpression {
     And {
         /// The search expressions to combine with AND.
         #[xml_struct(flatten)]
-        expressions: Vec<SearchExpression>,
+        expressions: Vec<Box<SearchExpression>>,
     },
 
     /// Represents a search expression that determines whether a given property
@@ -1721,7 +1721,7 @@ pub enum SearchExpression {
     Not {
         /// The search expression to negate.
         #[xml_struct(flatten)]
-        expression: SearchExpression,
+        expression: Box<SearchExpression>,
     },
 
     /// Represents a search expression that performs a logical OR operation on the search expressions it contains.
@@ -1730,7 +1730,7 @@ pub enum SearchExpression {
     Or {
         /// The search expressions to combine with OR.
         #[xml_struct(flatten)]
-        expressions: Vec<SearchExpression>,
+        expressions: Vec<Box<SearchExpression>>,
     },
 }
 
