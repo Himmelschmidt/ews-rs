@@ -2,39 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use quick_xml::events::BytesStart;
 use serde::Deserialize;
 use xml_struct::{XmlSerialize, XmlSerializeAttr};
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation, OperationResponse,
-    ResponseClass, ResponseCode,
+    types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation,
+    OperationResponse, ResponseClass, ResponseCode,
 };
 
 /// The traversal type for a FindItem operation.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(text)]
 pub enum Traversal {
     /// A shallow traversal finds items in the folder.
     Shallow,
     /// A soft-deleted traversal finds items in the dumpster.
     SoftDeleted,
-}
-
-impl std::fmt::Display for Traversal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Shallow => write!(f, "Shallow"),
-            Self::SoftDeleted => write!(f, "SoftDeleted"),
-        }
-    }
-}
-
-impl XmlSerializeAttr for Traversal {
-    fn serialize_as_attribute(&self, start: &mut quick_xml::events::BytesStart<'_>, name: &str) {
-        start.push_attribute((name, self.to_string().as_str()));
-    }
 }
 
 /// The FindItem operation searches for items that are located in a user's mailbox.
