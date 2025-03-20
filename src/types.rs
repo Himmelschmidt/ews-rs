@@ -16,6 +16,7 @@ pub mod delete_item;
 pub mod find_item;
 pub mod get_folder;
 pub mod get_item;
+pub mod move_item;
 pub mod sync_folder_hierarchy;
 pub mod sync_folder_items;
 pub mod update_item;

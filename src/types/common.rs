@@ -1318,6 +1318,14 @@ pub enum RoutingType {
     EX,
 }
 
+#[derive(Clone, Copy, Debug, Default, Deserialize, XmlSerialize, PartialEq)]
+#[xml_struct(text)]
+pub enum ReturnNewItemIds {
+    #[default]
+    True,
+    False,
+}
+
 /// The type of sender or recipient a mailbox represents.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/mailboxtype>

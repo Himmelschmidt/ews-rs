@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation,
-    OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder,MESSAGES_NS_URI,
+    OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder, MESSAGES_NS_URI,
 };
 
 /// The FindItem operation searches for items that are located in a user's mailbox.
@@ -58,7 +58,7 @@ impl EnvelopeBodyContents for FindItem {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponse>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct FindItemResponse {
     pub response_messages: ResponseMessages,
 }
@@ -75,7 +75,7 @@ impl EnvelopeBodyContents for FindItemResponse {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
     pub find_item_response_message: Vec<FindItemResponseMessage>,
 }
@@ -84,7 +84,7 @@ pub struct ResponseMessages {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct FindItemResponseMessage {
     /// The status of the corresponding request, i.e. whether it succeeded or
     /// resulted in an error.
@@ -105,7 +105,7 @@ pub struct FindItemResponseMessage {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-finditemresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct RootFolder {
     /// The total number of items in the view.
     #[serde(rename = "@TotalItemsInView")]
@@ -123,7 +123,7 @@ pub struct RootFolder {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/items>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct Items {
     /// The message items found by the search.
     #[serde(default)]
@@ -134,7 +134,7 @@ pub struct Items {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/message-ex15websvcsotherref>
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")] 
+#[serde(rename_all = "PascalCase")]
 pub struct Message {
     /// The ID of the message.
     pub item_id: ItemId,
@@ -150,4 +150,6 @@ pub enum Traversal {
     Shallow,
     /// A soft-deleted traversal finds items in the dumpster.
     SoftDeleted,
+    ///Returns only the identities of associated items in the folder.
+    Associated,
 }
