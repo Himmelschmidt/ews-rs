@@ -6,8 +6,8 @@ use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseItemId, Items, Operation, OperationResponse,
-    ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    types::sealed::EnvelopeBodyContents, BaseFolderId, BaseItemId, Items, Operation,
+    OperationResponse, ResponseClass, ResponseCode, MESSAGES_NS_URI,
 };
 
 /// A request to move an Exchange item to a different folder.
@@ -17,7 +17,7 @@ use crate::{
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
 pub struct MoveItem {
-    pub to_folder_id: BaseItemId,
+    pub to_folder_id: BaseFolderId,
     pub item_ids: Vec<BaseItemId>,
     pub return_new_item_ids: bool,
 }
