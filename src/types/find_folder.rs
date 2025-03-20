@@ -81,7 +81,7 @@ pub struct FindFolderResponseMessage {
     #[serde(rename = "@ResponseClass")]
     pub response_class: ResponseClass,
 
-    pub response_code: Option<ResponseCode>,
+    pub response_code: ResponseCode,
 
     pub message_text: Option<String>,
 
@@ -117,7 +117,7 @@ pub struct RootFolder {
 pub struct Folders {
     /// The folder items found by the search.
     #[serde(default)]
-    pub folders: Vec<Folder>,
+    pub folder: Vec<Folder>,
 }
 
 /// A message item found by a FindItem operation.
