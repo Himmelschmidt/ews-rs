@@ -117,7 +117,7 @@ pub struct RootFolder {
 pub struct Folders {
     /// The message items found by the search.
     #[serde(default)]
-    pub message: Vec<Message>,
+    pub message: Vec<Folder>,
 }
 
 /// A message item found by a FindItem operation.
@@ -125,7 +125,7 @@ pub struct Folders {
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/message-ex15websvcsotherref>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct Message {
+pub struct Folder {
     /// The ID of the message.
     pub folder_id: FolderId,
 
