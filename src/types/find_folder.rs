@@ -117,7 +117,7 @@ pub struct RootFolder {
 pub struct Folders {
     /// The message items found by the search.
     #[serde(default)]
-    pub message: Vec<Folder>,
+    pub folder: Vec<Folder>,
 }
 
 /// A message item found by a FindItem operation.
