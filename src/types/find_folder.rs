@@ -115,9 +115,9 @@ pub struct RootFolder {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Folders {
-    /// The message items found by the search.
+    /// The folder items found by the search.
     #[serde(default)]
-    pub folder: Vec<Folder>,
+    pub folders: Vec<Folder>,
 }
 
 /// A message item found by a FindItem operation.
