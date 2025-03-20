@@ -10,18 +10,6 @@ use crate::{
     OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder,
 };
 
-/// The traversal type for a FindItem operation.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
-#[derive(Clone, Debug, XmlSerialize)]
-#[xml_struct(text)]
-pub enum Traversal {
-    /// A shallow traversal finds items in the folder.
-    Shallow,
-    /// A soft-deleted traversal finds items in the dumpster.
-    SoftDeleted,
-}
-
 /// The FindItem operation searches for items that are located in a user's mailbox.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
@@ -43,12 +31,12 @@ pub struct FindItem {
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/parentfolderids>
     pub parent_folder_ids: Vec<BaseFolderId>,
-    
+
     /// The restriction or query used to filter items.
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/restriction>
     pub restriction: Option<Restriction>,
-    
+
     /// Defines how items are sorted in the response.
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/sortorder>
@@ -143,4 +131,16 @@ pub struct Items {
 pub struct Message {
     /// The ID of the message.
     pub item_id: ItemId,
+}
+
+/// The traversal type for a FindItem operation.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
+#[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum Traversal {
+    /// A shallow traversal finds items in the folder.
+    Shallow,
+    /// A soft-deleted traversal finds items in the dumpster.
+    SoftDeleted,
 }
