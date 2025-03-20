@@ -49,46 +49,51 @@ where
     where
         A: serde::de::MapAccess<'de>,
     {
-        match map.next_key::<String>()? {
-            Some(name) => {
-                let clean_name = name.split(':').last().unwrap_or(&name);
-                // We expect the body of the response to contain a single
-                // element with the name of the expected operation response.
-                let expected = T::name();
-                if clean_name != expected {
-                    return Err(serde::de::Error::custom(format_args!(
-                        "unknown element `{}`, expected {}",
-                        name, expected
-                    )));
+        // First, consume any namespace declarations
+        loop {
+            match map.next_key::<String>()? {
+                Some(key) if key.starts_with("@xmlns:") => {
+                    // Consume the namespace value
+                    let _ = map.next_value::<String>()?;
+                    continue;
                 }
+                Some(name) => {
+                    // Strip any namespace prefix
+                    let clean_name = name.split(':').last().unwrap_or(&name);
 
-                let value = map.next_value()?;
+                    // Check if this is our expected element
+                    let expected = T::name();
+                    if clean_name != expected {
+                        return Err(serde::de::Error::custom(format_args!(
+                            "unknown element `{}`, expected {}",
+                            name, expected
+                        )));
+                    }
 
-                // To satisfy quick-xml's serde impl, we need to consume the
-                // final `None` key value in order to successfully complete.
-                match map.next_key::<String>()? {
-                    Some(name) => {
-                        // Ignore namespace attributes
-                        if name.starts_with("@xmlns:") {
-                            // Consume the namespace value
+                    // Get the value and return it
+                    let value = map.next_value()?;
+
+                    // Consume any remaining namespace declarations
+                    while let Some(key) = map.next_key::<String>()? {
+                        if key.starts_with("@xmlns:") {
                             let _ = map.next_value::<String>()?;
-                            Ok(value)
                         } else {
-                            // The response body contained more than one non-namespace element,
-                            // which violates our expectations.
-                            Err(serde::de::Error::custom(format_args!(
+                            return Err(serde::de::Error::custom(format_args!(
                                 "unexpected element `{}`",
-                                name
-                            )))
+                                key
+                            )));
                         }
                     }
-                    None => Ok(value),
+
+                    return Ok(value);
+                }
+                None => {
+                    return Err(serde::de::Error::invalid_type(
+                        serde::de::Unexpected::Map,
+                        &self,
+                    ));
                 }
             }
-            None => Err(serde::de::Error::invalid_type(
-                serde::de::Unexpected::Map,
-                &self,
-            )),
         }
     }
 }
