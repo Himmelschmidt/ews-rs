@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, FolderId, FolderShape, Operation,
-    OperationResponse, ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    OperationResponse, ResponseClass, ResponseCode, Traversal, MESSAGES_NS_URI,
 };
 
 /// The FindItem operation searches for items that are located in a user's mailbox.
@@ -134,18 +134,4 @@ pub struct Folder {
     pub total_count: u32,
     pub child_folder_count: u32,
     pub unread_count: u32,
-}
-
-/// The traversal type for a FindItem operation.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
-#[derive(Clone, Debug, XmlSerialize)]
-#[xml_struct(text)]
-pub enum Traversal {
-    /// A shallow traversal finds items in the folder.
-    Shallow,
-    /// A soft-deleted traversal finds items in the dumpster.
-    SoftDeleted,
-    ///Returns only the identities of associated items in the folder.
-    Associated,
 }
