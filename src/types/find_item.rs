@@ -7,13 +7,14 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, ItemId, ItemShape, Operation,
-    OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder,
+    OperationResponse, ResponseClass, ResponseCode, Restriction, SortOrder,MESSAGES_NS_URI,
 };
 
 /// The FindItem operation searches for items that are located in a user's mailbox.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
 #[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(default_ns = MESSAGES_NS_URI)]
 pub struct FindItem {
     /// The traversal type for the search.
     ///
