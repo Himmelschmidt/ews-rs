@@ -51,10 +51,11 @@ where
     {
         match map.next_key::<String>()? {
             Some(name) => {
+                let clean_name = name.split(':').last().unwrap_or(&name);
                 // We expect the body of the response to contain a single
                 // element with the name of the expected operation response.
                 let expected = T::name();
-                if name.as_str() != expected {
+                if clean_name != expected {
                     return Err(serde::de::Error::custom(format_args!(
                         "unknown element `{}`, expected {}",
                         name, expected
@@ -67,12 +68,19 @@ where
                 // final `None` key value in order to successfully complete.
                 match map.next_key::<String>()? {
                     Some(name) => {
-                        // The response body contained more than one element,
-                        // which violates our expectations.
-                        Err(serde::de::Error::custom(format_args!(
-                            "unexpected element `{}`",
-                            name
-                        )))
+                        // Ignore namespace attributes
+                        if name.starts_with("@xmlns:") {
+                            // Consume the namespace value
+                            let _ = map.next_value::<String>()?;
+                            Ok(value)
+                        } else {
+                            // The response body contained more than one non-namespace element,
+                            // which violates our expectations.
+                            Err(serde::de::Error::custom(format_args!(
+                                "unexpected element `{}`",
+                                name
+                            )))
+                        }
                     }
                     None => Ok(value),
                 }
