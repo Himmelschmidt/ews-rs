@@ -12,7 +12,7 @@ use crate::Error;
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/requestserverversion#version-attribute-values>
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize, XmlSerialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Deserialize, XmlSerialize)]
 #[xml_struct(text)]
 pub enum ExchangeServerVersion {
     Exchange2007,
@@ -21,6 +21,7 @@ pub enum ExchangeServerVersion {
     Exchange2010_SP1,
     Exchange2010_SP2,
     Exchange2013,
+    #[default]
     Exchange2013_SP1,
 }
 

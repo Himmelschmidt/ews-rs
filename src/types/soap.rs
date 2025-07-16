@@ -63,6 +63,22 @@ impl<B> Envelope<B>
 where
     B: Operation,
 {
+    pub fn new(body: B) -> Self {
+        Self {
+            headers: vec![Header::RequestServerVersion {
+                version: ExchangeServerVersion::default(),
+            }],
+            body,
+        }
+    }
+
+    pub fn new_with_version(body: B, version: ExchangeServerVersion) -> Self {
+        Self {
+            headers: vec![Header::RequestServerVersion { version }],
+            body,
+        }
+    }
+
     /// Serializes the SOAP envelope as a complete XML document.
     pub fn as_xml_document(&self) -> Result<Vec<u8>, Error> {
         const SOAP_ENVELOPE: &str = "soap:Envelope";
