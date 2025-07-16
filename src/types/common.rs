@@ -734,7 +734,7 @@ pub enum ResponseCode {
 
 /// The traversal method for a find operation.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder-operation
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder-operation>
 #[derive(Clone, Copy, Debug, XmlSerialize)]
 #[xml_struct(text)]
 pub enum Traversal {

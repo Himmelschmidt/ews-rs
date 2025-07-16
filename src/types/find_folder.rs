@@ -13,7 +13,7 @@ use crate::{
 
 /// A request to find folders matching certain criteria.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
 pub struct FindFolder {
@@ -47,7 +47,7 @@ impl EnvelopeBodyContents for FindFolder {
 
 /// A response to a [`FindFolder`] request.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponse
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponse>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponse {
@@ -64,7 +64,7 @@ impl EnvelopeBodyContents for FindFolderResponse {
 
 /// A collection of responses for individual entities within a request.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponseMessages {
@@ -73,7 +73,7 @@ pub struct FindFolderResponseMessages {
 
 /// A response to a request for finding folders.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponsemessage
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponseMessage {
@@ -91,7 +91,7 @@ pub struct FindFolderResponseMessage {
 
 /// The root folder element in find responses.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-findfolderresponsemessage
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-findfolderresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RootFolder {

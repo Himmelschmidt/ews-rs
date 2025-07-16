@@ -13,7 +13,7 @@ use crate::{
 
 /// A request to find items matching certain criteria.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
 pub struct FindItem {
@@ -50,7 +50,7 @@ impl EnvelopeBodyContents for FindItem {
 
 /// A response to a [`FindItem`] request.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponse
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponse>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindItemResponse {
@@ -67,7 +67,7 @@ impl EnvelopeBodyContents for FindItemResponse {
 
 /// A collection of responses for individual entities within a request.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindItemResponseMessages {
@@ -76,7 +76,7 @@ pub struct FindItemResponseMessages {
 
 /// A response to a request for finding items.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponsemessage
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindItemResponseMessage {
@@ -94,7 +94,7 @@ pub struct FindItemResponseMessage {
 
 /// The root folder element in find responses.
 ///
-/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-finditemresponsemessage
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-finditemresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct RootFolder {
