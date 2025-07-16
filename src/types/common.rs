@@ -732,6 +732,128 @@ pub enum ResponseCode {
     ErrorTargetDomainNotSupported,
 }
 
+/// The traversal method for a find operation.
+///
+/// See https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder-operation
+#[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum Traversal {
+    Shallow,
+    SoftDeleted,
+    Associated,
+}
+
+/// The manner in which paged views of data are retrieved.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/basepagingtype>
+#[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(variant_ns_prefix = "t")]
+pub enum Paging {
+    /// A view of the data paged by item index.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/indexedpageitemview>
+    IndexedPageItemView(IndexedPaging),
+    // TODO: Implement other paging types:
+    // - FractionalPageItemView
+    // - CalendarView
+    // - ContactsView
+}
+
+impl Default for Paging {
+    fn default() -> Self {
+        Paging::IndexedPageItemView(Default::default())
+    }
+}
+
+/// Defines how paged views are retrieved from a list of items.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/indexedpageitemview>
+#[derive(Clone, Debug, Default, XmlSerialize)]
+pub struct IndexedPaging {
+    /// The maximum number of results to return.
+    #[xml_struct(attribute)]
+    pub max_entries_returned: Option<u32>,
+
+    /// The offset from the beginning of the list to start from.
+    #[xml_struct(attribute)]
+    pub offset: u32,
+
+    /// The point from which the offset is calculated.
+    #[xml_struct(attribute)]
+    pub base_point: BasePoint,
+}
+
+/// The direction from which the offset is calculated.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/indexedpageitemview>
+#[derive(Clone, Copy, Debug, Default, XmlSerialize)]
+#[xml_struct(text)]
+pub enum BasePoint {
+    #[default]
+    Beginning,
+    End,
+}
+
+/// A restriction or filter for a search operation.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/restriction>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct Restriction {
+    #[xml_struct(flatten)]
+    pub restriction_type: RestrictionType,
+}
+
+#[derive(Clone, Debug, XmlSerialize)]
+#[xml_struct(variant_ns_prefix = "t")]
+pub enum RestrictionType {
+    // TODO: And, Or, Not
+    IsEqualTo(FieldEqualTo),
+    // TODO: IsNotEqualTo, IsGreaterThan, IsGreaterThanOrEqualTo, IsLessThan, IsLessThanOrEqualTo
+    // TODO: Contains, Excludes
+    Exists(PathToElement),
+}
+
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct FieldEqualTo {
+    #[xml_struct(flatten, ns_prefix = "t")]
+    pub path: PathToElement,
+    #[xml_struct(ns_prefix = "t")]
+    pub field_uri_or_constant: FieldURIOrConstant,
+}
+
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct FieldURIOrConstant {
+    #[xml_struct(flatten, ns_prefix = "t")]
+    pub constant: Constant,
+}
+
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct Constant {
+    #[xml_struct(attribute)]
+    pub value: String,
+}
+
+/// Represents a single field by which to sort the results of a search.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/fieldorder>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct FieldOrder {
+    #[xml_struct(flatten)]
+    pub path: PathToElement,
+    #[xml_struct(attribute)]
+    pub order: SortDirection,
+}
+
+/// The direction in which to sort the results of a search.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/sortdirection>
+#[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
+pub enum SortDirection {
+    Ascending,
+    Descending,
+}
+
 /// The common format for item move and copy operations.
 #[derive(Clone, Debug, XmlSerialize)]
 pub struct CopyMoveItemData {
