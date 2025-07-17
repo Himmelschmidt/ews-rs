@@ -1491,6 +1491,76 @@ pub struct Message {
     pub references: Option<String>,
 }
 
+impl Message {
+    /// Create a new Message with all fields initialized to None.
+    pub fn new() -> Self {
+        Self {
+            mime_content: None,
+            item_id: None,
+            parent_folder_id: None,
+            item_class: None,
+            subject: None,
+            sensitivity: None,
+            body: None,
+            attachments: None,
+            date_time_received: None,
+            size: None,
+            categories: None,
+            extended_property: None,
+            importance: None,
+            in_reply_to: None,
+            is_submitted: None,
+            is_draft: None,
+            is_from_me: None,
+            is_resend: None,
+            is_unmodified: None,
+            internet_message_headers: None,
+            date_time_sent: None,
+            date_time_created: None,
+            reminder_due_by: None,
+            reminder_is_set: None,
+            reminder_minutes_before_start: None,
+            display_cc: None,
+            display_to: None,
+            has_attachments: None,
+            culture: None,
+            sender: None,
+            to_recipients: None,
+            cc_recipients: None,
+            bcc_recipients: None,
+            is_read_receipt_requested: None,
+            is_delivery_receipt_requested: None,
+            conversation_index: None,
+            conversation_topic: None,
+            from: None,
+            internet_message_id: None,
+            is_read: None,
+            is_response_requested: None,
+            reply_to: None,
+            received_by: None,
+            received_representing: None,
+            last_modified_name: None,
+            last_modified_time: None,
+            is_associated: None,
+            conversation_id: None,
+            references: None,
+        }
+    }
+
+    /// Create a new Message with basic information for common use cases.
+    pub fn with_basic_info(
+        subject: impl Into<String>,
+        body: Body,
+        to_recipients: ArrayOfRecipients,
+    ) -> Self {
+        let mut message = Self::new();
+        message.subject = Some(subject.into());
+        message.body = Some(body);
+        message.to_recipients = Some(to_recipients);
+        message
+    }
+}
+
 /// An extended MAPI property of an Exchange item or folder.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/extendedproperty>
