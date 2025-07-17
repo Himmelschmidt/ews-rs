@@ -1588,6 +1588,30 @@ pub struct Mailbox {
     pub item_id: Option<ItemId>,
 }
 
+impl Mailbox {
+    /// Create a new Mailbox with the given email address.
+    pub fn new(email_address: impl Into<String>) -> Self {
+        Self {
+            name: None,
+            email_address: email_address.into(),
+            routing_type: None,
+            mailbox_type: None,
+            item_id: None,
+        }
+    }
+
+    /// Create a new Mailbox with the given email address and name.
+    pub fn with_name(email_address: impl Into<String>, name: impl Into<String>) -> Self {
+        Self {
+            name: Some(name.into()),
+            email_address: email_address.into(),
+            routing_type: None,
+            mailbox_type: None,
+            item_id: None,
+        }
+    }
+}
+
 /// A protocol used in routing mail.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/routingtype-emailaddress>
