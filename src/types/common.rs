@@ -806,24 +806,55 @@ pub struct Restriction {
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(variant_ns_prefix = "t")]
 pub enum RestrictionType {
-    // TODO: And, Or, Not
+    And(AndRestriction),
+    Or(OrRestriction),
+    // TODO: Not
     IsEqualTo(FieldEqualTo),
     // TODO: IsNotEqualTo, IsGreaterThan, IsGreaterThanOrEqualTo, IsLessThan, IsLessThanOrEqualTo
     // TODO: Contains, Excludes
     Exists(PathToElement),
 }
 
+/// Represents a logical AND operation between multiple restrictions.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/and>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct AndRestriction(
+    #[xml_struct(ns_prefix = "t")]
+    pub Vec<Restriction>
+);
+
+/// Represents a logical OR operation between multiple restrictions.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/or>
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct OrRestriction(
+    #[xml_struct(ns_prefix = "t")]
+    pub Vec<Restriction>
+);
+
+// TODO: Implement NOT restriction once Box<T> serialization is resolved
+// /// Represents a logical NOT operation that negates another restriction.
+// ///
+// /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/not>
+// #[derive(Clone, Debug, XmlSerialize)]
+// pub struct NotRestriction {
+//     #[xml_struct(flatten, ns_prefix = "t")]
+//     pub restriction: Box<Restriction>,
+// }
+
 #[derive(Clone, Debug, XmlSerialize)]
 pub struct FieldEqualTo {
     #[xml_struct(flatten, ns_prefix = "t")]
     pub path: PathToElement,
     #[xml_struct(ns_prefix = "t")]
-    pub field_uri_or_constant: FieldURIOrConstant,
+    #[allow(non_snake_case)]
+    pub FieldURIOrConstant: FieldURIOrConstant,
 }
 
 #[derive(Clone, Debug, XmlSerialize)]
 pub struct FieldURIOrConstant {
-    #[xml_struct(flatten, ns_prefix = "t")]
+    #[xml_struct(ns_prefix = "t")]
     pub constant: Constant,
 }
 
@@ -831,6 +862,51 @@ pub struct FieldURIOrConstant {
 pub struct Constant {
     #[xml_struct(attribute)]
     pub value: String,
+}
+
+impl Restriction {
+    /// Creates a new AND restriction combining multiple restrictions.
+    pub fn and(restrictions: Vec<Restriction>) -> Self {
+        Self {
+            restriction_type: RestrictionType::And(AndRestriction(restrictions)),
+        }
+    }
+
+    /// Creates a new OR restriction for multiple alternative restrictions.
+    pub fn or(restrictions: Vec<Restriction>) -> Self {
+        Self {
+            restriction_type: RestrictionType::Or(OrRestriction(restrictions)),
+        }
+    }
+
+    // TODO: Implement NOT helper once Box<T> serialization is resolved
+    // /// Creates a new NOT restriction that negates another restriction.
+    // pub fn not(restriction: Restriction) -> Self {
+    //     Self {
+    //         restriction_type: RestrictionType::Not(NotRestriction {
+    //             restriction: Box::new(restriction),
+    //         }),
+    //     }
+    // }
+
+    /// Creates a new IsEqualTo restriction for field equality.
+    pub fn equal_to(path: PathToElement, value: String) -> Self {
+        Self {
+            restriction_type: RestrictionType::IsEqualTo(FieldEqualTo {
+                path,
+                FieldURIOrConstant: FieldURIOrConstant {
+                    constant: Constant { value },
+                },
+            }),
+        }
+    }
+
+    /// Creates a new Exists restriction to check field presence.
+    pub fn exists(path: PathToElement) -> Self {
+        Self {
+            restriction_type: RestrictionType::Exists(path),
+        }
+    }
 }
 
 /// Represents a single field by which to sort the results of a search.
@@ -1866,6 +1942,116 @@ mod tests {
             }
         );
 
+        Ok(())
+    }
+
+    /// Tests the creation and serialization of AND compound restrictions.
+    #[test]
+    fn test_and_restriction() -> Result<(), Error> {
+        let subject_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "item:Subject".to_string(),
+            },
+            "Test Subject".to_string(),
+        );
+        let sender_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "message:Sender".to_string(),
+            },
+            "sender@example.com".to_string(),
+        );
+
+        let and_restriction = Restriction::and(vec![subject_restriction, sender_restriction]);
+
+        let expected = r#"<Restriction><t:And><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Test Subject"/></t:FieldURIOrConstant></t:IsEqualTo><t:IsEqualTo><t:FieldURI FieldURI="message:Sender"/><t:FieldURIOrConstant><t:Constant Value="sender@example.com"/></t:FieldURIOrConstant></t:IsEqualTo></t:And></Restriction>"#;
+        assert_serialized_content(&and_restriction, "Restriction", expected);
+        Ok(())
+    }
+
+    /// Tests the creation and serialization of OR compound restrictions.
+    #[test]
+    fn test_or_restriction() -> Result<(), Error> {
+        let subject_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "item:Subject".to_string(),
+            },
+            "Important".to_string(),
+        );
+        let subject_restriction2 = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "item:Subject".to_string(),
+            },
+            "Urgent".to_string(),
+        );
+
+        let or_restriction = Restriction::or(vec![subject_restriction, subject_restriction2]);
+
+        let expected = r#"<Restriction><t:Or><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Important"/></t:FieldURIOrConstant></t:IsEqualTo><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Urgent"/></t:FieldURIOrConstant></t:IsEqualTo></t:Or></Restriction>"#;
+        assert_serialized_content(&or_restriction, "Restriction", expected);
+        Ok(())
+    }
+
+    // TODO: Uncomment once NOT restriction is implemented
+    // /// Tests the creation and serialization of NOT compound restrictions.
+    // #[test]
+    // fn test_not_restriction() -> Result<(), Error> {
+    //     let subject_restriction = Restriction::equal_to(
+    //         PathToElement::FieldURI {
+    //             field_URI: "item:Subject".to_string(),
+    //         },
+    //         "Spam".to_string(),
+    //     );
+
+    //     let not_restriction = Restriction::not(subject_restriction);
+
+    //     let expected = r#"<Restriction><t:Not><t:Restriction><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Spam"/></t:FieldURIOrConstant></t:IsEqualTo></t:Restriction></t:Not></Restriction>"#;
+    //     assert_serialized_content(&not_restriction, "Restriction", expected);
+    //     Ok(())
+    // }
+
+    /// Tests the creation and serialization of nested compound restrictions.
+    #[test]
+    fn test_nested_compound_restrictions() -> Result<(), Error> {
+        // Create inner OR restriction (Important OR Urgent)
+        let important_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "item:Subject".to_string(),
+            },
+            "Important".to_string(),
+        );
+        let urgent_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "item:Subject".to_string(),
+            },
+            "Urgent".to_string(),
+        );
+        let subject_or = Restriction::or(vec![important_restriction, urgent_restriction]);
+
+        // Create sender restriction
+        let sender_restriction = Restriction::equal_to(
+            PathToElement::FieldURI {
+                field_URI: "message:Sender".to_string(),
+            },
+            "boss@company.com".to_string(),
+        );
+
+        // Create outer AND restriction: (Important OR Urgent) AND (sender is boss)
+        let complex_restriction = Restriction::and(vec![subject_or, sender_restriction]);
+
+        let expected = r#"<Restriction><t:And><t:Or><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Important"/></t:FieldURIOrConstant></t:IsEqualTo><t:IsEqualTo><t:FieldURI FieldURI="item:Subject"/><t:FieldURIOrConstant><t:Constant Value="Urgent"/></t:FieldURIOrConstant></t:IsEqualTo></t:Or><t:IsEqualTo><t:FieldURI FieldURI="message:Sender"/><t:FieldURIOrConstant><t:Constant Value="boss@company.com"/></t:FieldURIOrConstant></t:IsEqualTo></t:And></Restriction>"#;
+        assert_serialized_content(&complex_restriction, "Restriction", expected);
+        Ok(())
+    }
+
+    /// Tests the Exists restriction helper method.
+    #[test]
+    fn test_exists_restriction() -> Result<(), Error> {
+        let exists_restriction = Restriction::exists(PathToElement::FieldURI {
+            field_URI: "item:HasAttachments".to_string(),
+        });
+
+        let expected = r#"<Restriction><t:Exists><t:FieldURI FieldURI="item:HasAttachments"/></t:Exists></Restriction>"#;
+        assert_serialized_content(&exists_restriction, "Restriction", expected);
         Ok(())
     }
 }
