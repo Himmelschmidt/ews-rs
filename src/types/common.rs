@@ -1524,6 +1524,39 @@ pub struct Recipient {
     pub mailbox: Mailbox,
 }
 
+impl Recipient {
+    /// Creates a new Recipient from an email address.
+    pub fn new(email_address: impl Into<String>) -> Self {
+        Self {
+            mailbox: Mailbox {
+                name: None,
+                email_address: email_address.into(),
+                routing_type: None,
+                mailbox_type: None,
+                item_id: None,
+            },
+        }
+    }
+
+    /// Creates a new Recipient with both email address and name.
+    pub fn with_name(email_address: impl Into<String>, name: impl Into<String>) -> Self {
+        Self {
+            mailbox: Mailbox {
+                name: Some(name.into()),
+                email_address: email_address.into(),
+                routing_type: None,
+                mailbox_type: None,
+                item_id: None,
+            },
+        }
+    }
+
+    /// Creates a new Recipient from a Mailbox.
+    pub fn from_mailbox(mailbox: Mailbox) -> Self {
+        Self { mailbox }
+    }
+}
+
 /// Deserializes a list of recipients.
 ///
 /// `quick-xml`'s `serde` implementation requires the presence of an
