@@ -82,7 +82,10 @@ pub struct EmptyFolderResponseMessage {
 
 #[cfg(test)]
 mod test {
-    use crate::{test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation, ResponseClass, ResponseCode};
+    use crate::{
+        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation,
+        ResponseClass, ResponseCode,
+    };
 
     use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage, ResponseMessages};
 
@@ -121,7 +124,7 @@ mod test {
                 change_key: None,
             }],
         };
-        
+
         assert_eq!(operation.name(), "EmptyFolder");
         assert!(!operation.delete_subfolders);
         assert_eq!(operation.folder_ids.len(), 1);

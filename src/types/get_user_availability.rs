@@ -572,12 +572,12 @@ mod tests {
 
             // Verify the view type is set correctly
             match options.requested_view {
-                FreeBusyViewType::None => {},
-                FreeBusyViewType::MergedOnly => {},
-                FreeBusyViewType::FreeBusy => {},
-                FreeBusyViewType::FreeBusyMerged => {},
-                FreeBusyViewType::Detailed => {},
-                FreeBusyViewType::DetailedMerged => {},
+                FreeBusyViewType::None => {}
+                FreeBusyViewType::MergedOnly => {}
+                FreeBusyViewType::FreeBusy => {}
+                FreeBusyViewType::FreeBusyMerged => {}
+                FreeBusyViewType::Detailed => {}
+                FreeBusyViewType::DetailedMerged => {}
             }
         }
     }
@@ -603,11 +603,11 @@ mod tests {
 
             // Verify the status is set correctly
             match event.busy_type {
-                LegacyFreeBusyStatus::Free => {},
-                LegacyFreeBusyStatus::Tentative => {},
-                LegacyFreeBusyStatus::Busy => {},
-                LegacyFreeBusyStatus::OOF => {},
-                LegacyFreeBusyStatus::NoData => {},
+                LegacyFreeBusyStatus::Free => {}
+                LegacyFreeBusyStatus::Tentative => {}
+                LegacyFreeBusyStatus::Busy => {}
+                LegacyFreeBusyStatus::OOF => {}
+                LegacyFreeBusyStatus::NoData => {}
             }
         }
     }
@@ -654,7 +654,7 @@ mod tests {
         };
 
         assert_eq!(operation.mailbox_data_array.mailbox_data.len(), 3);
-        
+
         for (i, mailbox) in operation.mailbox_data_array.mailbox_data.iter().enumerate() {
             assert_eq!(mailbox.email.address, format!("user{}@example.com", i + 1));
             assert_eq!(mailbox.exclude_conflicts, Some(true));
