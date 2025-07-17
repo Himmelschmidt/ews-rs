@@ -1224,6 +1224,69 @@ pub enum Folder {
     },
 }
 
+impl Folder {
+    pub fn new_folder(display_name: impl Into<String>) -> Self {
+        Self::Folder {
+            folder_id: None,
+            parent_folder_id: None,
+            folder_class: None,
+            display_name: Some(display_name.into()),
+            total_count: None,
+            child_folder_count: None,
+            extended_property: None,
+            unread_count: None,
+        }
+    }
+    
+    pub fn new_calendar_folder(display_name: impl Into<String>) -> Self {
+        Self::CalendarFolder {
+            folder_id: None,
+            parent_folder_id: None,
+            folder_class: None,
+            display_name: Some(display_name.into()),
+            total_count: None,
+            child_folder_count: None,
+            extended_property: None,
+        }
+    }
+    
+    pub fn new_contacts_folder(display_name: impl Into<String>) -> Self {
+        Self::ContactsFolder {
+            folder_id: None,
+            parent_folder_id: None,
+            folder_class: None,
+            display_name: Some(display_name.into()),
+            total_count: None,
+            child_folder_count: None,
+            extended_property: None,
+        }
+    }
+    
+    pub fn new_search_folder(display_name: impl Into<String>) -> Self {
+        Self::SearchFolder {
+            folder_id: None,
+            parent_folder_id: None,
+            folder_class: None,
+            display_name: Some(display_name.into()),
+            total_count: None,
+            child_folder_count: None,
+            extended_property: None,
+        }
+    }
+    
+    pub fn new_tasks_folder(display_name: impl Into<String>) -> Self {
+        Self::TasksFolder {
+            folder_id: None,
+            parent_folder_id: None,
+            folder_class: None,
+            display_name: Some(display_name.into()),
+            total_count: None,
+            child_folder_count: None,
+            extended_property: None,
+        }
+    }
+}
+
 /// An array of items.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct Items {
