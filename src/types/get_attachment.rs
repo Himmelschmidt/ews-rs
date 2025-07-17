@@ -6,8 +6,8 @@ use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, Attachment, AttachmentId, Operation,
-    OperationResponse, ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    types::sealed::EnvelopeBodyContents, Attachment, AttachmentId, Operation, OperationResponse,
+    ResponseClass, ResponseCode, MESSAGES_NS_URI,
 };
 
 /// A request to retrieve one or more attachments from Exchange items.
@@ -119,10 +119,13 @@ pub struct Attachments {
 #[cfg(test)]
 mod test {
     use crate::{
-        test_utils::assert_deserialized_content, Attachment, AttachmentId, ResponseClass, ResponseCode,
+        test_utils::assert_deserialized_content, Attachment, AttachmentId, ResponseClass,
+        ResponseCode,
     };
 
-    use super::{GetAttachmentResponse, GetAttachmentResponseMessage, ResponseMessages, Attachments};
+    use super::{
+        Attachments, GetAttachmentResponse, GetAttachmentResponseMessage, ResponseMessages,
+    };
 
     #[test]
     fn test_deserialize_get_attachment_response() {
@@ -151,9 +154,9 @@ mod test {
                     response_class: ResponseClass::Success,
                     response_code: Some(ResponseCode::NoError),
                     message_text: None,
-                    attachments: Some(Attachments { 
+                    attachments: Some(Attachments {
                         inner: vec![Attachment::FileAttachment {
-                            attachment_id: AttachmentId { 
+                            attachment_id: AttachmentId {
                                 id: "AQMkADEyYjJhY2Y0LWVmYjEtNDNhNS05NTA4LWNkMzQ1ZGI1MmY2NgBGAAADYTcxYjJhNGQ2".to_string(),
                                 root_item_id: None,
                                 root_item_change_key: None,

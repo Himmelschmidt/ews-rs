@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::types::sealed::EnvelopeBodyContents;
 use crate::{
-    BaseItemId, BaseFolderId, Operation, OperationResponse, ResponseClass, ResponseCode,
+    BaseFolderId, BaseItemId, Operation, OperationResponse, ResponseClass, ResponseCode,
     MESSAGES_NS_URI,
 };
 
@@ -85,9 +85,7 @@ pub struct SendItemResponseMessage {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        test_utils::assert_deserialized_content, ResponseClass, ResponseCode,
-    };
+    use crate::{test_utils::assert_deserialized_content, ResponseClass, ResponseCode};
 
     use super::{ResponseMessages, SendItemResponse, SendItemResponseMessage};
 
