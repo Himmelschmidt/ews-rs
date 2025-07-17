@@ -10,6 +10,7 @@ pub use operations::*;
 pub mod soap;
 
 pub mod copy_item;
+pub mod create_attachment;
 pub mod create_folder;
 pub mod create_item;
 pub mod delete_folder;
