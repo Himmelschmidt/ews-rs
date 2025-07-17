@@ -21,6 +21,7 @@ pub mod get_folder;
 pub mod get_item;
 pub mod move_folder;
 pub mod move_item;
+pub mod resolve_names;
 pub mod send_item;
 pub mod server_version;
 pub mod sync_folder_hierarchy;
