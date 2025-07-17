@@ -47,6 +47,35 @@ pub struct SyncFolderItems {
     pub sync_scope: Option<SyncScope>,
 }
 
+impl SyncFolderItems {
+    pub fn new(sync_folder_id: BaseFolderId) -> Self {
+        Self {
+            item_shape: ItemShape::default(),
+            sync_folder_id,
+            sync_state: None,
+            ignore: None,
+            max_changes_returned: 512,
+            sync_scope: None,
+        }
+    }
+}
+
+impl Default for SyncFolderItems {
+    fn default() -> Self {
+        Self {
+            item_shape: ItemShape::default(),
+            sync_folder_id: BaseFolderId::FolderId {
+                id: String::new(),
+                change_key: None,
+            },
+            sync_state: None,
+            ignore: None,
+            max_changes_returned: 512,
+            sync_scope: None,
+        }
+    }
+}
+
 impl Operation for SyncFolderItems {
     type Response = SyncFolderItemsResponse;
 }

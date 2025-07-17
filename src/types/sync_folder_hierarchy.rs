@@ -14,7 +14,7 @@ use crate::{
 /// server-side.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/syncfolderhierarchy>
-#[derive(Clone, Debug, XmlSerialize)]
+#[derive(Clone, Debug, Default, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
 pub struct SyncFolderHierarchy {
     /// A description of the information to be included in the response for each
@@ -31,6 +31,12 @@ pub struct SyncFolderHierarchy {
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/syncstate-ex15websvcsotherref>
     pub sync_state: Option<String>,
+}
+
+impl SyncFolderHierarchy {
+    pub fn new() -> Self {
+        Self::default()
+    }
 }
 
 impl Operation for SyncFolderHierarchy {
