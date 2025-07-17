@@ -848,7 +848,8 @@ pub struct FieldEqualTo {
     #[xml_struct(flatten, ns_prefix = "t")]
     pub path: PathToElement,
     #[xml_struct(ns_prefix = "t")]
-    pub field_urior_constant: FieldURIOrConstant,
+    #[allow(non_snake_case)]
+    pub FieldURIOrConstant: FieldURIOrConstant,
 }
 
 #[derive(Clone, Debug, XmlSerialize)]
@@ -893,7 +894,7 @@ impl Restriction {
         Self {
             restriction_type: RestrictionType::IsEqualTo(FieldEqualTo {
                 path,
-                field_urior_constant: FieldURIOrConstant {
+                FieldURIOrConstant: FieldURIOrConstant {
                     constant: Constant { value },
                 },
             }),
@@ -1060,6 +1061,24 @@ pub struct ItemId {
     #[serde(rename = "@ChangeKey")]
     #[xml_struct(attribute)]
     pub change_key: Option<String>,
+}
+
+impl ItemId {
+    /// Creates a new ItemId with the given ID and no change key.
+    pub fn new(id: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            change_key: None,
+        }
+    }
+    
+    /// Creates a new ItemId with the given ID and change key.
+    pub fn with_change_key(id: impl Into<String>, change_key: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            change_key: Some(change_key.into()),
+        }
+    }
 }
 
 /// The representation of a folder in an EWS operation.
