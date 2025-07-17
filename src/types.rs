@@ -21,6 +21,7 @@ pub mod get_attachment;
 pub mod get_folder;
 pub mod get_item;
 pub mod get_server_time_zones;
+pub mod get_user_availability;
 pub mod move_folder;
 pub mod move_item;
 pub mod resolve_names;
