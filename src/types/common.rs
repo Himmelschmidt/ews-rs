@@ -844,11 +844,11 @@ pub struct OrRestriction(
 // }
 
 #[derive(Clone, Debug, XmlSerialize)]
+#[allow(non_snake_case)]
 pub struct FieldEqualTo {
     #[xml_struct(flatten, ns_prefix = "t")]
     pub path: PathToElement,
     #[xml_struct(ns_prefix = "t")]
-    #[allow(non_snake_case)]
     pub FieldURIOrConstant: FieldURIOrConstant,
 }
 
