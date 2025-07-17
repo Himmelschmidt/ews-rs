@@ -1728,6 +1728,35 @@ pub struct Body {
     pub content: Option<String>,
 }
 
+impl Body {
+    /// Create a new Body with text content.
+    pub fn text(content: impl Into<String>) -> Self {
+        Self {
+            body_type: BodyType::Text,
+            content: Some(content.into()),
+            is_truncated: None,
+        }
+    }
+
+    /// Create a new Body with HTML content.
+    pub fn html(content: impl Into<String>) -> Self {
+        Self {
+            body_type: BodyType::HTML,
+            content: Some(content.into()),
+            is_truncated: None,
+        }
+    }
+
+    /// Create a new Body with the specified body type and content.
+    pub fn new(body_type: BodyType, content: impl Into<String>) -> Self {
+        Self {
+            body_type,
+            content: Some(content.into()),
+            is_truncated: None,
+        }
+    }
+}
+
 /// The content type of an item's body.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/body>
