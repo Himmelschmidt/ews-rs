@@ -27,6 +27,7 @@ pub mod get_user_availability;
 pub mod mark_as_read;
 pub mod move_folder;
 pub mod move_item;
+pub mod reply_to_item;
 pub mod resolve_names;
 pub mod send_item;
 pub mod server_version;
