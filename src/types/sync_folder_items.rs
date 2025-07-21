@@ -140,6 +140,7 @@ pub struct ArrayOfBaseItemIds {
 }
 
 #[derive(Clone, Copy, Debug, XmlSerialize)]
+#[xml_struct(text)]
 pub enum SyncScope {
     NormalItems,
     NormalAndAssociatedItems,
