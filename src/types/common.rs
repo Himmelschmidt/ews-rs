@@ -28,7 +28,7 @@ pub struct FolderShape {
 /// The item properties which should be included in the response.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/itemshape>.
-#[derive(Clone, Debug, Default, XmlSerialize)]
+#[derive(Clone, Debug, XmlSerialize)]
 pub struct ItemShape {
     /// The base set of properties to include, which may be extended by other
     /// fields.
@@ -49,6 +49,16 @@ pub struct ItemShape {
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/additionalproperties>
     #[xml_struct(ns_prefix = "t")]
     pub additional_properties: Option<Vec<PathToElement>>,
+}
+
+impl Default for ItemShape {
+    fn default() -> Self {
+        Self {
+            base_shape: BaseShape::IdOnly,
+            include_mime_content: None,
+            additional_properties: None,
+        }
+    }
 }
 
 /// An identifier for a property on an Exchange entity.
