@@ -137,6 +137,35 @@ pub enum PathToElement {
     },
 }
 
+/// Response objects available for a message item.
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responseobjects>
+#[derive(Clone, Debug, Deserialize, XmlSerialize, PartialEq, Eq)]
+#[serde(rename_all = "PascalCase")]
+pub struct ResponseObjects {
+    /// Available reply action for the message.
+    #[xml_struct(ns_prefix = "t")]
+    pub reply_to_item: Option<MessageResponseObject>,
+    
+    /// Available reply-all action for the message.
+    #[xml_struct(ns_prefix = "t")]
+    pub reply_all_to_item: Option<MessageResponseObject>,
+    
+    /// Available forward action for the message.
+    #[xml_struct(ns_prefix = "t")]
+    pub forward_item: Option<MessageResponseObject>,
+}
+
+/// A response object representing an available action on a message.
+///
+/// These are different from the operation types and represent the available
+/// actions that can be performed on a message as returned in GetItem responses.
+#[derive(Clone, Debug, Deserialize, XmlSerialize, PartialEq, Eq)]
+pub struct MessageResponseObject {
+    // This struct is intentionally empty as the XML elements typically
+    // only indicate availability of the action through their presence
+}
+
 /// The identifier for an extended MAPI property.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/extendedfielduri>
@@ -1562,6 +1591,12 @@ pub struct Message {
 
     #[xml_struct(ns_prefix = "t")]
     pub references: Option<String>,
+
+    /// Response objects available for this message.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responseobjects>
+    #[xml_struct(ns_prefix = "t")]
+    pub response_objects: Option<ResponseObjects>,
 }
 
 impl Message {
@@ -1617,6 +1652,7 @@ impl Message {
             is_associated: None,
             conversation_id: None,
             references: None,
+            response_objects: None,
         }
     }
 
