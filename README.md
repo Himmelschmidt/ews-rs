@@ -1,5 +1,26 @@
 # Exchange Web Services
 
+This is a fork of the [ews-rs crate](https://github.com/thunderbird/ews-rs) for Thunderbird with added features and enhancements. This fork includes:
+
+**Non Exhaustive List of New EWS Operations:**
+- FindItem and FindFolder operations for searching emails and folders
+- SendItem operation for sending emails
+- GetAttachment and CreateAttachment operations for attachment handling
+- ResolveNames operation for name resolution
+- GetServerTimeZones operation for timezone information
+- GetUserAvailability operation for calendar availability
+- EmptyFolder operation for folder management
+- MarkAsRead operation for message status updates
+- GetMailTips operation for email tips and information
+- ReplyToItem operation for replying to messages
+
+**Enhanced Data Structures:**
+- Constructor methods for core structs (Message, Folder, ItemId, Body, Recipient, Mailbox)
+- Constructors for SyncFolderHierarchy and SyncFolderItems
+- Compound restrictions (AND, OR) for mail filtering
+
+We aim to keep this fork synced and compatible with the original repository while providing additional functionality.
+
 This rust crate holds types that represent data structures and operations for
 the [Exchange Web Services
 API](https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/ews-reference-for-exchange),
