@@ -1022,6 +1022,16 @@ pub struct Message {
     #[xml_struct(ns_prefix = "t")]
     pub display_to: Option<String>,
 
+    /// Whether the item has (non-inline) attachments.
+    /// 
+    /// **Important**: According to Microsoft's EWS specification, inline attachments 
+    /// (embedded images, etc.) are considered "hidden attachments" and do NOT affect 
+    /// this property. If an item only has inline attachments, this will be `false`.
+    /// 
+    /// To check for any attachments including inline ones, use `has_any_attachments()`.
+    /// To access all attachments including inline ones, check the `attachments` field directly.
+    ///
+    /// See: <https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/attachments-and-ews-in-exchange>
     #[xml_struct(ns_prefix = "t")]
     pub has_attachments: Option<bool>,
 
@@ -1163,6 +1173,53 @@ impl Message {
         message.body = Some(body);
         message.to_recipients = Some(to_recipients);
         message
+    }
+
+    /// Returns true if the message has any attachments, including inline attachments.
+    ///
+    /// This method checks the actual `attachments` collection rather than relying on the
+    /// `has_attachments` property, which according to Microsoft's EWS specification does
+    /// not include inline attachments (embedded images, etc.).
+    ///
+    /// Use this method when you need to know if there are any attachments at all,
+    /// including inline/embedded ones.
+    pub fn has_any_attachments(&self) -> bool {
+        self.attachments
+            .as_ref()
+            .map(|attachments| !attachments.inner.is_empty())
+            .unwrap_or(false)
+    }
+
+    /// Returns true if the message has any inline attachments (embedded images, etc.).
+    ///
+    /// Inline attachments are typically embedded in HTML email bodies and referenced
+    /// by Content-ID (cid:) links.
+    pub fn has_inline_attachments(&self) -> bool {
+        self.attachments
+            .as_ref()
+            .map(|attachments| {
+                attachments.inner.iter().any(|attachment| match attachment {
+                    Attachment::FileAttachment { is_inline, .. } => is_inline.unwrap_or(false),
+                    Attachment::ItemAttachment { is_inline, .. } => is_inline.unwrap_or(false),
+                })
+            })
+            .unwrap_or(false)
+    }
+
+    /// Returns true if the message has any non-inline (regular) attachments.
+    ///
+    /// This typically corresponds to files that users would save or download,
+    /// as opposed to embedded images or inline content.
+    pub fn has_regular_attachments(&self) -> bool {
+        self.attachments
+            .as_ref()
+            .map(|attachments| {
+                attachments.inner.iter().any(|attachment| match attachment {
+                    Attachment::FileAttachment { is_inline, .. } => !is_inline.unwrap_or(false),
+                    Attachment::ItemAttachment { is_inline, .. } => !is_inline.unwrap_or(false),
+                })
+            })
+            .unwrap_or(false)
     }
 }
 
@@ -1831,6 +1888,112 @@ mod tests {
 
         let expected = r#"<Restriction><t:Exists><t:FieldURI FieldURI="item:HasAttachments"/></t:Exists></Restriction>"#;
         assert_serialized_content(&exists_restriction, "Restriction", expected);
+        Ok(())
+    }
+
+    /// Tests deserialization of a message with HasAttachments=false but inline attachments present.
+    /// This is expected EWS behavior where inline attachments are "hidden attachments" and do not
+    /// affect the HasAttachments property according to Microsoft's EWS specification.
+    #[test]
+    fn test_message_with_inline_attachments_has_attachments_false() -> Result<(), Error> {
+        // XML representing a message with HasAttachments=false but inline attachments present
+        let xml = r#"<Message xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:HasAttachments>false</t:HasAttachments>
+            <t:Subject>Email with inline image</t:Subject>
+            <t:Attachments>
+                <t:FileAttachment>
+                    <t:AttachmentId Id="AAMkAGE3"/>
+                    <t:Name>image001.png</t:Name>
+                    <t:ContentType>image/png</t:ContentType>
+                    <t:ContentId>image001.png@01DB6678.C4A79FB0</t:ContentId>
+                    <t:IsInline>true</t:IsInline>
+                    <t:IsContactPhoto>false</t:IsContactPhoto>
+                </t:FileAttachment>
+            </t:Attachments>
+        </Message>"#;
+
+        // Deserialize the raw XML, with `serde_path_to_error` to help
+        // troubleshoot any issue.
+        let mut de = quick_xml::de::Deserializer::from_reader(xml.as_bytes());
+        let message: Message = serde_path_to_error::deserialize(&mut de)?;
+
+        // Verify that HasAttachments is false (as per EWS specification for inline attachments)
+        assert_eq!(message.has_attachments, Some(false));
+        
+        // Verify that attachments are still present
+        assert!(message.attachments.is_some());
+        let attachments = message.attachments.as_ref().unwrap();
+        assert_eq!(attachments.inner.len(), 1);
+        
+        // Verify it's an inline attachment
+        if let Attachment::FileAttachment { is_inline, .. } = &attachments.inner[0] {
+            assert_eq!(*is_inline, Some(true));
+        } else {
+            panic!("Expected FileAttachment");
+        }
+
+        Ok(())
+    }
+
+    /// Tests the convenience methods for checking different types of attachments.
+    #[test]
+    fn test_message_attachment_convenience_methods() -> Result<(), Error> {
+        // Create a message with inline attachment
+        let inline_xml = r#"<Message xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:HasAttachments>false</t:HasAttachments>
+            <t:Attachments>
+                <t:FileAttachment>
+                    <t:AttachmentId Id="inline-id"/>
+                    <t:Name>image.png</t:Name>
+                    <t:ContentType>image/png</t:ContentType>
+                    <t:IsInline>true</t:IsInline>
+                </t:FileAttachment>
+            </t:Attachments>
+        </Message>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(inline_xml.as_bytes());
+        let inline_message: Message = serde_path_to_error::deserialize(&mut de)?;
+
+        // Test convenience methods for inline attachment
+        assert!(inline_message.has_any_attachments());
+        assert!(inline_message.has_inline_attachments());
+        assert!(!inline_message.has_regular_attachments());
+
+        // Create a message with regular attachment
+        let regular_xml = r#"<Message xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:HasAttachments>true</t:HasAttachments>
+            <t:Attachments>
+                <t:FileAttachment>
+                    <t:AttachmentId Id="regular-id"/>
+                    <t:Name>document.pdf</t:Name>
+                    <t:ContentType>application/pdf</t:ContentType>
+                    <t:IsInline>false</t:IsInline>
+                </t:FileAttachment>
+            </t:Attachments>
+        </Message>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(regular_xml.as_bytes());
+        let regular_message: Message = serde_path_to_error::deserialize(&mut de)?;
+
+        // Test convenience methods for regular attachment
+        assert!(regular_message.has_any_attachments());
+        assert!(!regular_message.has_inline_attachments());
+        assert!(regular_message.has_regular_attachments());
+
+        // Create a message with no attachments
+        let no_attachments_xml = r#"<Message xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:HasAttachments>false</t:HasAttachments>
+            <t:Subject>No attachments</t:Subject>
+        </Message>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(no_attachments_xml.as_bytes());
+        let no_attachments_message: Message = serde_path_to_error::deserialize(&mut de)?;
+
+        // Test convenience methods for no attachments
+        assert!(!no_attachments_message.has_any_attachments());
+        assert!(!no_attachments_message.has_inline_attachments());
+        assert!(!no_attachments_message.has_regular_attachments());
+
         Ok(())
     }
 }
