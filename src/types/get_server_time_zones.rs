@@ -6,7 +6,7 @@ use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, Operation, OperationResponse, ResponseClass, ResponseCode,
+    types::sealed::EnvelopeBodyContents, Operation, OperationResponse, ResponseClass,
     MESSAGES_NS_URI,
 };
 
@@ -69,7 +69,8 @@ impl EnvelopeBodyContents for GetServerTimeZonesResponse {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetServerTimeZonesResponseMessages {
-    pub get_server_time_zones_response_message: Vec<GetServerTimeZonesResponseMessage>,
+    pub get_server_time_zones_response_message:
+        Vec<ResponseClass<GetServerTimeZonesResponseMessage>>,
 }
 
 /// A response to a request for server time zones.
@@ -78,14 +79,6 @@ pub struct GetServerTimeZonesResponseMessages {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetServerTimeZonesResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// The time zone definitions returned by the server.
     pub time_zone_definitions: Option<TimeZoneDefinitions>,
 }

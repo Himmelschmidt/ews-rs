@@ -7,8 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, FolderShape, Folders, Operation,
-    OperationResponse, Paging, ResponseClass, ResponseCode, Restriction, Traversal,
-    MESSAGES_NS_URI,
+    OperationResponse, Paging, ResponseClass, Restriction, Traversal, MESSAGES_NS_URI,
 };
 
 /// A request to find folders matching certain criteria.
@@ -68,7 +67,7 @@ impl EnvelopeBodyContents for FindFolderResponse {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponseMessages {
-    pub find_folder_response_message: Vec<FindFolderResponseMessage>,
+    pub find_folder_response_message: Vec<ResponseClass<FindFolderResponseMessage>>,
 }
 
 /// A response to a request for finding folders.
@@ -77,14 +76,6 @@ pub struct FindFolderResponseMessages {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// The root folder containing the search results.
     pub root_folder: RootFolder,
 }

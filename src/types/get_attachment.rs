@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, Attachment, AttachmentId, Operation, OperationResponse,
-    ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    ResponseClass, MESSAGES_NS_URI,
 };
 
 /// A request to retrieve one or more attachments from Exchange items.
@@ -89,21 +89,12 @@ impl EnvelopeBodyContents for GetAttachmentResponse {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
-    pub get_attachment_response_message: Vec<GetAttachmentResponseMessage>,
+    pub get_attachment_response_message: Vec<ResponseClass<GetAttachmentResponseMessage>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetAttachmentResponseMessage {
-    /// The status of the corresponding request, i.e. whether it succeeded or
-    /// resulted in an error.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// The retrieved attachments.
     pub attachments: Option<Attachments>,
 }
@@ -118,10 +109,7 @@ pub struct Attachments {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        test_utils::assert_deserialized_content, Attachment, AttachmentId, ResponseClass,
-        ResponseCode,
-    };
+    use crate::{test_utils::assert_deserialized_content, Attachment, AttachmentId, ResponseClass};
 
     use super::{
         Attachments, GetAttachmentResponse, GetAttachmentResponseMessage, ResponseMessages,
@@ -150,10 +138,7 @@ mod test {
 
         let expected = GetAttachmentResponse {
             response_messages: ResponseMessages {
-                get_attachment_response_message: vec![GetAttachmentResponseMessage {
-                    response_class: ResponseClass::Success,
-                    response_code: Some(ResponseCode::NoError),
-                    message_text: None,
+                get_attachment_response_message: vec![ResponseClass::Success(GetAttachmentResponseMessage {
                     attachments: Some(Attachments {
                         inner: vec![Attachment::FileAttachment {
                             attachment_id: AttachmentId {
@@ -172,7 +157,7 @@ mod test {
                             content: Some("SGVsbG8=".to_string()),
                         }]
                     }),
-                }],
+                })],
             },
         };
 

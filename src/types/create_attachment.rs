@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, AttachmentId, BaseItemId, Operation, OperationResponse,
-    ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    ResponseClass, MESSAGES_NS_URI,
 };
 
 /// A request to create one or more attachments on an Exchange item.
@@ -178,20 +178,12 @@ impl EnvelopeBodyContents for CreateAttachmentResponse {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
-    pub create_attachment_response_message: Vec<CreateAttachmentResponseMessage>,
+    pub create_attachment_response_message: Vec<ResponseClass<CreateAttachmentResponseMessage>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct CreateAttachmentResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// The created attachments.
     pub attachments: Option<CreatedAttachments>,
 }
@@ -224,9 +216,7 @@ pub enum CreatedAttachment {
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        test_utils::assert_deserialized_content, AttachmentId, ResponseClass, ResponseCode,
-    };
+    use crate::{test_utils::assert_deserialized_content, AttachmentId, ResponseClass};
 
     use super::{
         CreateAttachmentResponse, CreateAttachmentResponseMessage, CreatedAttachment,
@@ -252,10 +242,7 @@ mod test {
 
         let expected = CreateAttachmentResponse {
             response_messages: ResponseMessages {
-                create_attachment_response_message: vec![CreateAttachmentResponseMessage {
-                    response_class: ResponseClass::Success,
-                    response_code: Some(ResponseCode::NoError),
-                    message_text: None,
+                create_attachment_response_message: vec![ResponseClass::Success(CreateAttachmentResponseMessage {
                     attachments: Some(CreatedAttachments {
                         inner: vec![CreatedAttachment::FileAttachment {
                             attachment_id: AttachmentId {
@@ -265,7 +252,7 @@ mod test {
                             },
                         }]
                     }),
-                }],
+                })],
             },
         };
 

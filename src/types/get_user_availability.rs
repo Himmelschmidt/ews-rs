@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, DateTime, Operation, OperationResponse, ResponseClass,
-    ResponseCode, MESSAGES_NS_URI, TYPES_NS_URI,
+    MESSAGES_NS_URI, TYPES_NS_URI,
 };
 
 /// A request to get user availability information.
@@ -185,19 +185,12 @@ pub struct FreeBusyResponseArray {
 }
 
 /// Free/busy response for a single mailbox.
+pub type FreeBusyResponse = Option<ResponseClass<FreeBusyResponseData>>;
+
+/// Free/busy response data.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct FreeBusyResponse {
-    /// The status of the response.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: Option<ResponseClass>,
-
-    /// Response code if there was an error.
-    pub response_code: Option<ResponseCode>,
-
-    /// Error message if there was an error.
-    pub message_text: Option<String>,
-
+pub struct FreeBusyResponseData {
     /// The free/busy view data.
     pub free_busy_view: Option<FreeBusyView>,
 }
@@ -330,19 +323,12 @@ pub enum LegacyFreeBusyStatus {
 }
 
 /// Suggestions response for meeting times.
+pub type SuggestionsResponse = Option<ResponseClass<SuggestionsResponseData>>;
+
+/// Suggestions response data.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct SuggestionsResponse {
-    /// The status of the suggestions response.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: Option<ResponseClass>,
-
-    /// Response code if there was an error.
-    pub response_code: Option<ResponseCode>,
-
-    /// Error message if there was an error.
-    pub message_text: Option<String>,
-
+pub struct SuggestionsResponseData {
     /// Array of meeting time suggestions.
     pub suggestion_day_result_array: Option<SuggestionDayResultArray>,
 }

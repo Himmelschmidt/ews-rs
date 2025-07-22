@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, DeleteType, Operation, OperationResponse,
-    ResponseClass, ResponseCode, MESSAGES_NS_URI,
+    ResponseClass, MESSAGES_NS_URI,
 };
 
 /// A request to delete all items from one or more folders.
@@ -64,27 +64,17 @@ impl EnvelopeBodyContents for EmptyFolderResponse {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
-    pub empty_folder_response_message: Vec<EmptyFolderResponseMessage>,
+    pub empty_folder_response_message: Vec<ResponseClass<EmptyFolderResponseMessage>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
-pub struct EmptyFolderResponseMessage {
-    /// The status of the corresponding request, i.e. whether it succeeded or
-    /// resulted in an error.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-}
+pub struct EmptyFolderResponseMessage {}
 
 #[cfg(test)]
 mod test {
     use crate::{
-        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation,
-        ResponseClass, ResponseCode,
+        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation, ResponseClass,
     };
 
     use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage, ResponseMessages};
@@ -103,11 +93,9 @@ mod test {
 
         let expected = EmptyFolderResponse {
             response_messages: ResponseMessages {
-                empty_folder_response_message: vec![EmptyFolderResponseMessage {
-                    response_class: ResponseClass::Success,
-                    response_code: Some(ResponseCode::NoError),
-                    message_text: None,
-                }],
+                empty_folder_response_message: vec![ResponseClass::Success(
+                    EmptyFolderResponseMessage {},
+                )],
             },
         };
 

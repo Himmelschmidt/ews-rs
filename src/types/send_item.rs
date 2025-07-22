@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::types::sealed::EnvelopeBodyContents;
 use crate::{
-    BaseFolderId, BaseItemId, Operation, OperationResponse, ResponseClass, ResponseCode,
+    BaseFolderId, BaseItemId, Operation, OperationResponse, ResponseClass,
     MESSAGES_NS_URI,
 };
 
@@ -67,25 +67,16 @@ impl EnvelopeBodyContents for SendItemResponse {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
-    pub send_item_response_message: Vec<SendItemResponseMessage>,
+    pub send_item_response_message: Vec<ResponseClass<SendItemResponseMessage>>,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
-pub struct SendItemResponseMessage {
-    /// The status of the corresponding request, i.e. whether it succeeded or
-    /// resulted in an error.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-}
+pub struct SendItemResponseMessage {}
 
 #[cfg(test)]
 mod test {
-    use crate::{test_utils::assert_deserialized_content, ResponseClass, ResponseCode};
+    use crate::{test_utils::assert_deserialized_content, ResponseClass};
 
     use super::{ResponseMessages, SendItemResponse, SendItemResponseMessage};
 
@@ -103,11 +94,7 @@ mod test {
 
         let expected = SendItemResponse {
             response_messages: ResponseMessages {
-                send_item_response_message: vec![SendItemResponseMessage {
-                    response_class: ResponseClass::Success,
-                    response_code: Some(ResponseCode::NoError),
-                    message_text: None,
-                }],
+                send_item_response_message: vec![ResponseClass::Success(SendItemResponseMessage {})],
             },
         };
 

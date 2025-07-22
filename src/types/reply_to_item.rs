@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, ArrayOfRecipients, Body, ItemId, ItemResponseMessage,
-    MessageDisposition, Operation, OperationResponse, Recipient, MESSAGES_NS_URI,
+    MessageDisposition, Operation, OperationResponse, Recipient, ResponseClass, MESSAGES_NS_URI,
 };
 
 /// A reply to the sender of an item in the Exchange store.
@@ -102,7 +102,7 @@ impl EnvelopeBodyContents for ReplyToItemResponse {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ReplyToItemResponseMessages {
-    pub reply_to_item_response_message: Vec<ItemResponseMessage>,
+    pub reply_to_item_response_message: Vec<ResponseClass<ItemResponseMessage>>,
 }
 
 #[cfg(test)]
@@ -110,7 +110,7 @@ mod tests {
     use crate::{
         test_utils::{assert_deserialized_content, assert_serialized_content},
         ArrayOfRecipients, Body, BodyType, ItemId, ItemResponseMessage, Items, Mailbox,
-        MessageDisposition, Recipient, ResponseClass, ResponseCode,
+        MessageDisposition, Recipient, ResponseClass,
     };
 
     use super::{ReplyToItem, ReplyToItemResponse, ReplyToItemResponseMessages};
@@ -172,12 +172,9 @@ mod tests {
 
         let expected = ReplyToItemResponse {
             response_messages: ReplyToItemResponseMessages {
-                reply_to_item_response_message: vec![ItemResponseMessage {
-                    response_class: ResponseClass::Success,
-                    response_code: Some(ResponseCode::NoError),
-                    message_text: None,
+                reply_to_item_response_message: vec![ResponseClass::Success(ItemResponseMessage {
                     items: Items { inner: vec![] },
-                }],
+                })],
             },
         };
 

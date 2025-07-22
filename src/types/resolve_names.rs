@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseFolderId, Operation, OperationResponse, ResponseClass,
-    ResponseCode, MESSAGES_NS_URI,
+    MESSAGES_NS_URI,
 };
 
 /// A request to resolve ambiguous email addresses and display names.
@@ -92,7 +92,7 @@ impl EnvelopeBodyContents for ResolveNamesResponse {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResolveNamesResponseMessages {
-    pub resolve_names_response_message: Vec<ResolveNamesResponseMessage>,
+    pub resolve_names_response_message: Vec<ResponseClass<ResolveNamesResponseMessage>>,
 }
 
 /// A response message for an individual ResolveNames request.
@@ -101,14 +101,6 @@ pub struct ResolveNamesResponseMessages {
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResolveNamesResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// Collection of resolved names.
     pub resolution_set: Option<ResolutionSet>,
 }

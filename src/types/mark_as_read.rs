@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, BaseItemId, Operation, OperationResponse, ResponseClass,
-    ResponseCode, MESSAGES_NS_URI,
+    MESSAGES_NS_URI,
 };
 
 /// A request to mark one or more items as read or unread.
@@ -61,7 +61,7 @@ impl EnvelopeBodyContents for MarkAsReadResponse {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct MarkAsReadResponseMessages {
-    pub mark_as_read_response_message: Vec<MarkAsReadResponseMessage>,
+    pub mark_as_read_response_message: Vec<ResponseClass<MarkAsReadResponseMessage>>,
 }
 
 /// A response to a request for marking an item as read/unread.
@@ -69,15 +69,7 @@ pub struct MarkAsReadResponseMessages {
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/markasreadresponsemessage>
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct MarkAsReadResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-}
+pub struct MarkAsReadResponseMessage {}
 
 #[cfg(test)]
 mod test {
@@ -122,9 +114,9 @@ mod test {
 
         let response: MarkAsReadResponse =
             quick_xml::de::from_str(xml).expect("should deserialize successfully");
-        assert_eq!(
-            response.response_messages.mark_as_read_response_message[0].response_class,
-            ResponseClass::Success
-        );
+        assert!(matches!(
+            response.response_messages.mark_as_read_response_message[0],
+            ResponseClass::Success(_)
+        ));
     }
 }

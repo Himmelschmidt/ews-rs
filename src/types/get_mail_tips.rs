@@ -7,7 +7,7 @@ use xml_struct::XmlSerialize;
 
 use crate::{
     types::sealed::EnvelopeBodyContents, Mailbox, Operation, OperationResponse, ResponseClass,
-    ResponseCode, MESSAGES_NS_URI,
+    MESSAGES_NS_URI,
 };
 
 /// A request to get mail tips for specified recipients.
@@ -77,7 +77,7 @@ impl EnvelopeBodyContents for GetMailTipsResponse {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetMailTipsResponseMessages {
-    pub get_mail_tips_response_message: Vec<GetMailTipsResponseMessage>,
+    pub get_mail_tips_response_message: Vec<ResponseClass<GetMailTipsResponseMessage>>,
 }
 
 /// A response to a request for getting mail tips.
@@ -86,14 +86,6 @@ pub struct GetMailTipsResponseMessages {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetMailTipsResponseMessage {
-    /// The status of the corresponding request.
-    #[serde(rename = "@ResponseClass")]
-    pub response_class: ResponseClass,
-
-    pub response_code: Option<ResponseCode>,
-
-    pub message_text: Option<String>,
-
     /// Mail tips for the recipients.
     pub mail_tips: Option<Vec<MailTips>>,
 }
