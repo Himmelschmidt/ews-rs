@@ -902,29 +902,40 @@ pub enum AttachmentItem {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DateTime(pub time::OffsetDateTime);
 
+// Helper module for flexible datetime deserialization
+mod flexible_datetime {
+    use serde::{Deserialize, Deserializer};
+    
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<time::OffsetDateTime, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        
+        // The time crate's ISO8601 parser can handle both formats if we configure it properly
+        // First try with the default ISO8601 parser which expects timezone
+        if let Ok(dt) = time::OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
+            return Ok(dt);
+        }
+        
+        // If no timezone, parse as PrimitiveDateTime and assume UTC
+        // This handles the Exchange Server case where timezone is omitted
+        if let Ok(pdt) = time::PrimitiveDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
+            return Ok(pdt.assume_utc());
+        }
+        
+        Err(serde::de::Error::custom(format!(
+            "Unable to parse datetime '{s}'. Expected ISO8601 format with or without timezone."
+        )))
+    }
+}
+
 impl<'de> serde::Deserialize<'de> for DateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let s = String::deserialize(deserializer)?;
-        
-        // Try the standard ISO8601 format with timezone first
-        if let Ok(dt) = time::OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
-            return Ok(DateTime(dt));
-        }
-        
-        // If that fails, try parsing as PrimitiveDateTime (no timezone) and assume UTC
-        if let Ok(pdt) = time::PrimitiveDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
-            return Ok(DateTime(pdt.assume_utc()));
-        }
-        
-        // Try a basic RFC3339 format as well
-        if let Ok(dt) = time::OffsetDateTime::parse(&s, &time::format_description::well_known::Rfc3339) {
-            return Ok(DateTime(dt));
-        }
-        
-        Err(serde::de::Error::custom(format!("Unable to parse datetime '{s}'. Expected ISO8601 format with or without timezone.")))
+        flexible_datetime::deserialize(deserializer).map(DateTime)
     }
 }
 
