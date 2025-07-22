@@ -42,7 +42,7 @@ impl EnvelopeBodyContents for GetItem {
 /// A response to a [`GetItem`] request.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getitemresponse>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetItemResponse {
     pub response_messages: ResponseMessages,
@@ -56,13 +56,13 @@ impl EnvelopeBodyContents for GetItemResponse {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct ResponseMessages {
     pub get_item_response_message: Vec<ResponseClass<GetItemResponseMessage>>,
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetItemResponseMessage {
     pub items: Items,
