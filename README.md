@@ -33,7 +33,7 @@ The Cargo documentation for this repository is not currently hosted online. It
 can be accessed locally after cloning this repository and generating it:
 
 ```bash
-git clone https://github.com/thunderbird/ews-rs.git
+git clone https://github.com/Himmelschmidt/ews-rs.git
 cd ews-rs
 cargo doc --open
 ```
