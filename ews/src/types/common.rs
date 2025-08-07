@@ -9,7 +9,7 @@ use time::format_description::well_known::Iso8601;
 use xml_struct::XmlSerialize;
 
 pub mod response;
-pub use self::response::ResponseClass;
+pub use self::response::{ResponseClass, ResponseMessages};
 pub mod message_xml;
 pub use self::message_xml::MessageXml;
 
@@ -498,6 +498,20 @@ pub struct CopyMoveItemData {
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/returnnewitemids>
     pub return_new_item_ids: Option<bool>,
+}
+
+/// The common format for folder move and copy operations.
+#[derive(Clone, Debug, XmlSerialize)]
+pub struct CopyMoveFolderData {
+    /// The destination folder for the copied/moved folder.
+    ///
+    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/tofolderid>
+    pub to_folder_id: BaseFolderId,
+
+    /// The identifiers for each folder to copy/move.
+    ///
+    /// <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/folderids>
+    pub folder_ids: Vec<BaseFolderId>,
 }
 
 /// The common format of folder response messages.
