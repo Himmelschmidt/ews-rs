@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, Mailbox, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI,
-};
+use crate::{Mailbox, MESSAGES_NS_URI};
 
 /// A request to get mail tips for specified recipients.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getmailtips>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(GetMailTipsResponseMessage)]
 pub struct GetMailTips {
     /// The email address sending the message.
     pub sending_as: Mailbox,
@@ -26,20 +25,11 @@ pub struct GetMailTips {
     pub mail_tips_requested: MailTipsRequested,
 }
 
-impl Operation for GetMailTips {
-    type Response = GetMailTipsResponse;
-}
-
-impl EnvelopeBodyContents for GetMailTips {
-    fn name() -> &'static str {
-        "GetMailTips"
-    }
-}
 
 /// Types of mail tips that can be requested.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/mailtipsrequested>
-#[derive(Clone, Debug, Deserialize, XmlSerialize)]
+#[derive(Clone, Debug, Deserialize, XmlSerialize, PartialEq, Eq)]
 #[xml_struct(text)]
 pub enum MailTipsRequested {
     All,
@@ -54,36 +44,11 @@ pub enum MailTipsRequested {
     InvalidRecipient,
 }
 
-/// A response to a [`GetMailTips`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getmailtipsresponse>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct GetMailTipsResponse {
-    pub response_messages: GetMailTipsResponseMessages,
-}
-
-impl OperationResponse for GetMailTipsResponse {}
-
-impl EnvelopeBodyContents for GetMailTipsResponse {
-    fn name() -> &'static str {
-        "GetMailTipsResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct GetMailTipsResponseMessages {
-    pub get_mail_tips_response_message: Vec<ResponseClass<GetMailTipsResponseMessage>>,
-}
 
 /// A response to a request for getting mail tips.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getmailtipsresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetMailTipsResponseMessage {
     /// Mail tips for the recipients.
@@ -93,7 +58,7 @@ pub struct GetMailTipsResponseMessage {
 /// Mail tips information for a recipient.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/mailtips>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct MailTips {
     /// The recipient for whom the mail tips apply.
@@ -133,7 +98,7 @@ pub struct MailTips {
 /// Out of office information for a recipient.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/outofoffice>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct OutOfOffice {
     /// The out of office reply message.
@@ -143,7 +108,7 @@ pub struct OutOfOffice {
 /// Out of office reply message.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/replymessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct OutOfOfficeReplyMessage {
     /// The message content.
@@ -158,7 +123,7 @@ pub struct OutOfOfficeReplyMessage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{test_utils::assert_serialized_content, Error};
+    use crate::{test_utils::assert_serialized_content, Error, Operation};
 
     #[test]
     fn test_get_mail_tips_operation_name() {

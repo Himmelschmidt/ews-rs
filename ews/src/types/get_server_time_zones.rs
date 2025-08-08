@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI,
-};
+use crate::MESSAGES_NS_URI;
 
 /// A request to retrieve time zone definitions from the Exchange server.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getservertimezones>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(GetServerTimeZonesResponseMessage)]
 pub struct GetServerTimeZones {
     /// Whether to return the complete definitions for each time zone.
     ///
@@ -29,15 +28,6 @@ pub struct GetServerTimeZones {
     pub ids: Option<TimeZoneIds>,
 }
 
-impl Operation for GetServerTimeZones {
-    type Response = GetServerTimeZonesResponse;
-}
-
-impl EnvelopeBodyContents for GetServerTimeZones {
-    fn name() -> &'static str {
-        "GetServerTimeZones"
-    }
-}
 
 /// Container for time zone identifiers.
 #[derive(Clone, Debug, XmlSerialize)]
@@ -48,35 +38,11 @@ pub struct TimeZoneIds {
     pub id: Vec<String>,
 }
 
-/// A response to a [`GetServerTimeZones`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getservertimezonesresponse>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct GetServerTimeZonesResponse {
-    pub response_messages: GetServerTimeZonesResponseMessages,
-}
-
-impl OperationResponse for GetServerTimeZonesResponse {}
-
-impl EnvelopeBodyContents for GetServerTimeZonesResponse {
-    fn name() -> &'static str {
-        "GetServerTimeZonesResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct GetServerTimeZonesResponseMessages {
-    pub get_server_time_zones_response_message:
-        Vec<ResponseClass<GetServerTimeZonesResponseMessage>>,
-}
 
 /// A response to a request for server time zones.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getservertimezonesresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GetServerTimeZonesResponseMessage {
     /// The time zone definitions returned by the server.
@@ -84,7 +50,7 @@ pub struct GetServerTimeZonesResponseMessage {
 }
 
 /// Container for time zone definitions.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneDefinitions {
     /// Array of time zone definitions.
@@ -95,7 +61,7 @@ pub struct TimeZoneDefinitions {
 /// Represents a time zone definition from the Exchange server.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/timezonedefinition>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneDefinition {
     /// The unique identifier for the time zone.
@@ -117,7 +83,7 @@ pub struct TimeZoneDefinition {
 }
 
 /// Container for time zone periods.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZonePeriods {
     /// Array of time zone periods.
@@ -126,7 +92,7 @@ pub struct TimeZonePeriods {
 }
 
 /// Represents a period within a time zone definition.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZonePeriod {
     /// The bias (in minutes) for this period.
@@ -143,7 +109,7 @@ pub struct TimeZonePeriod {
 }
 
 /// Container for time zone transition groups.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneTransitionsGroups {
     /// Array of transition groups.
@@ -152,7 +118,7 @@ pub struct TimeZoneTransitionsGroups {
 }
 
 /// Represents a group of transitions for a time zone.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneTransitionsGroup {
     /// The identifier for this transitions group.
@@ -164,7 +130,7 @@ pub struct TimeZoneTransitionsGroup {
 }
 
 /// Container for time zone transitions.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneTransitions {
     /// Array of transitions.
@@ -173,7 +139,7 @@ pub struct TimeZoneTransitions {
 }
 
 /// Represents a transition between time zone periods.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneTransition {
     /// Points to a transition group.
@@ -181,7 +147,7 @@ pub struct TimeZoneTransition {
 }
 
 /// Represents the target of a time zone transition.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct TimeZoneTransitionTo {
     /// The kind of transition target.
@@ -193,13 +159,6 @@ pub struct TimeZoneTransitionTo {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_get_server_time_zones_operation_name() {
-        assert_eq!(
-            <GetServerTimeZones as crate::types::sealed::EnvelopeBodyContents>::name(),
-            "GetServerTimeZones"
-        );
-    }
 
     #[test]
     fn test_get_server_time_zones_creation() {

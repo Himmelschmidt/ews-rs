@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI,
-};
+use crate::{BaseFolderId, MESSAGES_NS_URI};
 
 /// A request to resolve ambiguous email addresses and display names.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/resolvenames>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(ResolveNamesResponseMessage)]
 pub struct ResolveNames {
     /// Determines whether the full contact data for resolved names is returned.
     #[xml_struct(attribute)]
@@ -35,15 +34,6 @@ pub struct ResolveNames {
     pub unresolved_entry: String,
 }
 
-impl Operation for ResolveNames {
-    type Response = ResolveNamesResponse;
-}
-
-impl EnvelopeBodyContents for ResolveNames {
-    fn name() -> &'static str {
-        "ResolveNames"
-    }
-}
 
 /// Defines the search scope for the ResolveNames operation.
 #[derive(Clone, Copy, Debug, XmlSerialize)]
@@ -71,29 +61,6 @@ pub enum ContactDataShape {
     AllProperties,
 }
 
-/// A response to a [`ResolveNames`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/resolvenamesresponse>
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResolveNamesResponse {
-    pub response_messages: ResolveNamesResponseMessages,
-}
-
-impl OperationResponse for ResolveNamesResponse {}
-
-impl EnvelopeBodyContents for ResolveNamesResponse {
-    fn name() -> &'static str {
-        "ResolveNamesResponse"
-    }
-}
-
-/// A collection of responses for ResolveNames requests.
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResolveNamesResponseMessages {
-    pub resolve_names_response_message: Vec<ResponseClass<ResolveNamesResponseMessage>>,
-}
 
 /// A response message for an individual ResolveNames request.
 ///
@@ -345,11 +312,4 @@ mod tests {
         ));
     }
 
-    #[test]
-    fn test_resolve_names_operation_name() {
-        assert_eq!(
-            <ResolveNames as crate::types::sealed::EnvelopeBodyContents>::name(),
-            "ResolveNames"
-        );
-    }
 }

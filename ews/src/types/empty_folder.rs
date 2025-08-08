@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, DeleteType, Operation, OperationResponse,
-    ResponseClass, MESSAGES_NS_URI,
-};
+use crate::{BaseFolderId, DeleteType, MESSAGES_NS_URI};
 
 /// A request to delete all items from one or more folders.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/emptyfolder>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(EmptyFolderResponseMessage)]
 pub struct EmptyFolder {
     /// The method the EWS server will use to perform the deletion of items.
     ///
@@ -34,39 +33,6 @@ pub struct EmptyFolder {
     pub folder_ids: Vec<BaseFolderId>,
 }
 
-impl Operation for EmptyFolder {
-    type Response = EmptyFolderResponse;
-}
-
-impl EnvelopeBodyContents for EmptyFolder {
-    fn name() -> &'static str {
-        "EmptyFolder"
-    }
-}
-
-/// A response to an [`EmptyFolder`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/emptyfolderresponse>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct EmptyFolderResponse {
-    pub response_messages: ResponseMessages,
-}
-
-impl OperationResponse for EmptyFolderResponse {}
-
-impl EnvelopeBodyContents for EmptyFolderResponse {
-    fn name() -> &'static str {
-        "EmptyFolderResponse"
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResponseMessages {
-    pub empty_folder_response_message: Vec<ResponseClass<EmptyFolderResponseMessage>>,
-}
-
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct EmptyFolderResponseMessage {}
@@ -74,10 +40,12 @@ pub struct EmptyFolderResponseMessage {}
 #[cfg(test)]
 mod test {
     use crate::{
-        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation, ResponseClass,
+        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, ResponseClass,
+        Operation,
     };
 
-    use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage, ResponseMessages};
+    use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage};
+    use crate::ResponseMessages;
 
     #[test]
     fn test_deserialize_empty_folder_response() {
@@ -93,7 +61,7 @@ mod test {
 
         let expected = EmptyFolderResponse {
             response_messages: ResponseMessages {
-                empty_folder_response_message: vec![ResponseClass::Success(
+                response_messages: vec![ResponseClass::Success(
                     EmptyFolderResponseMessage {},
                 )],
             },

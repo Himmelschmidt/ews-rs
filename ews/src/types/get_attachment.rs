@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, Attachment, AttachmentId, Operation, OperationResponse,
-    ResponseClass, MESSAGES_NS_URI,
-};
+use crate::{Attachment, AttachmentId, MESSAGES_NS_URI};
 
 /// A request to retrieve one or more attachments from Exchange items.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getattachment>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(GetAttachmentResponseMessage)]
 pub struct GetAttachment {
     /// Optional shape information for the attachment. Typically used to specify
     /// whether to include the attachment content in the response.
@@ -28,15 +27,6 @@ pub struct GetAttachment {
     pub attachment_ids: Vec<AttachmentId>,
 }
 
-impl Operation for GetAttachment {
-    type Response = GetAttachmentResponse;
-}
-
-impl EnvelopeBodyContents for GetAttachment {
-    fn name() -> &'static str {
-        "GetAttachment"
-    }
-}
 
 /// Describes what information to include in attachment responses.
 ///
@@ -69,28 +59,6 @@ pub enum BodyType {
     Best,
 }
 
-/// A response to a [`GetAttachment`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getattachmentresponse>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct GetAttachmentResponse {
-    pub response_messages: ResponseMessages,
-}
-
-impl OperationResponse for GetAttachmentResponse {}
-
-impl EnvelopeBodyContents for GetAttachmentResponse {
-    fn name() -> &'static str {
-        "GetAttachmentResponse"
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResponseMessages {
-    pub get_attachment_response_message: Vec<ResponseClass<GetAttachmentResponseMessage>>,
-}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
@@ -111,9 +79,8 @@ pub struct Attachments {
 mod test {
     use crate::{test_utils::assert_deserialized_content, Attachment, AttachmentId, ResponseClass};
 
-    use super::{
-        Attachments, GetAttachmentResponse, GetAttachmentResponseMessage, ResponseMessages,
-    };
+    use super::{Attachments, GetAttachmentResponse, GetAttachmentResponseMessage};
+    use crate::ResponseMessages;
 
     #[test]
     fn test_deserialize_get_attachment_response() {
@@ -138,7 +105,7 @@ mod test {
 
         let expected = GetAttachmentResponse {
             response_messages: ResponseMessages {
-                get_attachment_response_message: vec![ResponseClass::Success(GetAttachmentResponseMessage {
+                response_messages: vec![ResponseClass::Success(GetAttachmentResponseMessage {
                     attachments: Some(Attachments {
                         inner: vec![Attachment::FileAttachment {
                             attachment_id: AttachmentId {

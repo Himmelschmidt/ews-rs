@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, BaseItemId, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI,
-};
+use crate::{BaseItemId, MESSAGES_NS_URI};
 
 /// A request to mark one or more items as read or unread.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/markasread>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(MarkAsReadResponseMessage)]
 pub struct MarkAsRead {
     /// Whether to mark the items as read (true) or unread (false).
     #[xml_struct(attribute)]
@@ -28,46 +27,11 @@ pub struct MarkAsRead {
     pub item_ids: Vec<BaseItemId>,
 }
 
-impl Operation for MarkAsRead {
-    type Response = MarkAsReadResponse;
-}
-
-impl EnvelopeBodyContents for MarkAsRead {
-    fn name() -> &'static str {
-        "MarkAsRead"
-    }
-}
-
-/// A response to a [`MarkAsRead`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/markasreadresponse>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct MarkAsReadResponse {
-    pub response_messages: MarkAsReadResponseMessages,
-}
-
-impl OperationResponse for MarkAsReadResponse {}
-
-impl EnvelopeBodyContents for MarkAsReadResponse {
-    fn name() -> &'static str {
-        "MarkAsReadResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct MarkAsReadResponseMessages {
-    pub mark_as_read_response_message: Vec<ResponseClass<MarkAsReadResponseMessage>>,
-}
 
 /// A response to a request for marking an item as read/unread.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/markasreadresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct MarkAsReadResponseMessage {}
 
@@ -115,7 +79,7 @@ mod test {
         let response: MarkAsReadResponse =
             quick_xml::de::from_str(xml).expect("should deserialize successfully");
         assert!(matches!(
-            response.response_messages.mark_as_read_response_message[0],
+            response.response_messages.response_messages[0],
             ResponseClass::Success(_)
         ));
     }

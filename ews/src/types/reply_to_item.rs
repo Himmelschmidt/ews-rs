@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use serde::Deserialize;
+use ews_proc_macros::operation_response;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, ArrayOfRecipients, Body, ItemId, ItemResponseMessage,
-    MessageDisposition, Operation, OperationResponse, Recipient, ResponseClass, MESSAGES_NS_URI,
+    ArrayOfRecipients, Body, ItemId, ItemResponseMessage, MessageDisposition, Recipient,
+    MESSAGES_NS_URI,
 };
 
 /// A reply to the sender of an item in the Exchange store.
@@ -15,6 +15,7 @@ use crate::{
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/replytoitem>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(ReplyToItemResponseMessage)]
 pub struct ReplyToItem {
     /// The action the Exchange server will take upon creating this reply.
     #[xml_struct(attribute)]
@@ -69,41 +70,7 @@ pub struct ReplyToItem {
     pub received_representing: Option<Recipient>,
 }
 
-impl Operation for ReplyToItem {
-    type Response = ReplyToItemResponse;
-}
-
-impl EnvelopeBodyContents for ReplyToItem {
-    fn name() -> &'static str {
-        "ReplyToItem"
-    }
-}
-
-/// A response to a [`ReplyToItem`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/replytoitemresponse>
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ReplyToItemResponse {
-    pub response_messages: ReplyToItemResponseMessages,
-}
-
-impl OperationResponse for ReplyToItemResponse {}
-
-impl EnvelopeBodyContents for ReplyToItemResponse {
-    fn name() -> &'static str {
-        "ReplyToItemResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
-#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ReplyToItemResponseMessages {
-    pub reply_to_item_response_message: Vec<ResponseClass<ItemResponseMessage>>,
-}
+pub type ReplyToItemResponseMessage = ItemResponseMessage;
 
 #[cfg(test)]
 mod tests {
@@ -113,7 +80,8 @@ mod tests {
         MessageDisposition, Recipient, ResponseClass,
     };
 
-    use super::{ReplyToItem, ReplyToItemResponse, ReplyToItemResponseMessages};
+    use super::{ReplyToItem, ReplyToItemResponse};
+    use crate::ResponseMessages;
 
     #[test]
     fn test_serialize_reply_to_item() {
@@ -171,8 +139,8 @@ mod tests {
                         </ReplyToItemResponse>"#;
 
         let expected = ReplyToItemResponse {
-            response_messages: ReplyToItemResponseMessages {
-                reply_to_item_response_message: vec![ResponseClass::Success(ItemResponseMessage {
+            response_messages: ResponseMessages {
+                response_messages: vec![ResponseClass::Success(ItemResponseMessage {
                     items: Items { inner: vec![] },
                 })],
             },

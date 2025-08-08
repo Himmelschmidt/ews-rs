@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, FieldOrder, ItemShape, Items, Operation,
-    OperationResponse, Paging, ResponseClass, Restriction, Traversal, MESSAGES_NS_URI,
+    BaseFolderId, FieldOrder, ItemShape, Items, Paging, Restriction, Traversal, MESSAGES_NS_URI,
 };
 
 /// A request to find items matching certain criteria.
@@ -15,6 +15,7 @@ use crate::{
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditem>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(FindItemResponseMessage)]
 pub struct FindItem {
     /// The traversal method for the find operation.
     #[xml_struct(attribute)]
@@ -37,46 +38,11 @@ pub struct FindItem {
     pub parent_folder_ids: Vec<BaseFolderId>,
 }
 
-impl Operation for FindItem {
-    type Response = FindItemResponse;
-}
-
-impl EnvelopeBodyContents for FindItem {
-    fn name() -> &'static str {
-        "FindItem"
-    }
-}
-
-/// A response to a [`FindItem`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponse>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct FindItemResponse {
-    pub response_messages: FindItemResponseMessages,
-}
-
-impl OperationResponse for FindItemResponse {}
-
-impl EnvelopeBodyContents for FindItemResponse {
-    fn name() -> &'static str {
-        "FindItemResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct FindItemResponseMessages {
-    pub find_item_response_message: Vec<ResponseClass<FindItemResponseMessage>>,
-}
 
 /// A response to a request for finding items.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindItemResponseMessage {
     /// The root folder containing the search results.
@@ -86,7 +52,7 @@ pub struct FindItemResponseMessage {
 /// The root folder element in find responses.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-finditemresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct RootFolder {
     #[serde(rename = "@IndexedPagingOffset")]

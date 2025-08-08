@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, AttachmentId, BaseItemId, Operation, OperationResponse,
-    ResponseClass, MESSAGES_NS_URI,
-};
+use crate::{AttachmentId, BaseItemId, MESSAGES_NS_URI};
 
 /// A request to create one or more attachments on an Exchange item.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/createattachment>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(CreateAttachmentResponseMessage)]
 pub struct CreateAttachment {
     /// The identifier of the parent Exchange store item to which the attachments will be added.
     ///
@@ -27,15 +26,6 @@ pub struct CreateAttachment {
     pub attachments: Vec<NewAttachment>,
 }
 
-impl Operation for CreateAttachment {
-    type Response = CreateAttachmentResponse;
-}
-
-impl EnvelopeBodyContents for CreateAttachment {
-    fn name() -> &'static str {
-        "CreateAttachment"
-    }
-}
 
 /// An attachment to be created, without an existing attachment ID.
 #[derive(Clone, Debug, XmlSerialize)]
@@ -158,28 +148,6 @@ pub struct EmailAddressType {
     pub routing_type: Option<String>,
 }
 
-/// A response to a [`CreateAttachment`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/createattachmentresponse>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct CreateAttachmentResponse {
-    pub response_messages: ResponseMessages,
-}
-
-impl OperationResponse for CreateAttachmentResponse {}
-
-impl EnvelopeBodyContents for CreateAttachmentResponse {
-    fn name() -> &'static str {
-        "CreateAttachmentResponse"
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResponseMessages {
-    pub create_attachment_response_message: Vec<ResponseClass<CreateAttachmentResponseMessage>>,
-}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
@@ -220,8 +188,9 @@ mod test {
 
     use super::{
         CreateAttachmentResponse, CreateAttachmentResponseMessage, CreatedAttachment,
-        CreatedAttachments, ResponseMessages,
+        CreatedAttachments,
     };
+    use crate::ResponseMessages;
 
     #[test]
     fn test_deserialize_create_attachment_response() {
@@ -242,7 +211,7 @@ mod test {
 
         let expected = CreateAttachmentResponse {
             response_messages: ResponseMessages {
-                create_attachment_response_message: vec![ResponseClass::Success(CreateAttachmentResponseMessage {
+                response_messages: vec![ResponseClass::Success(CreateAttachmentResponseMessage {
                     attachments: Some(CreatedAttachments {
                         inner: vec![CreatedAttachment::FileAttachment {
                             attachment_id: AttachmentId {

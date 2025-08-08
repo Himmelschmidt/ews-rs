@@ -2,20 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::types::sealed::EnvelopeBodyContents;
-use crate::{
-    BaseFolderId, BaseItemId, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI,
-};
+use crate::{BaseFolderId, BaseItemId, MESSAGES_NS_URI};
 
 /// A request to send one or more Exchange items.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/senditem>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(SendItemResponseMessage)]
 pub struct SendItem {
     /// Whether to save a copy of the sent item.
     ///
@@ -37,38 +35,6 @@ pub struct SendItem {
     pub saved_item_folder_id: Option<BaseFolderId>,
 }
 
-impl Operation for SendItem {
-    type Response = SendItemResponse;
-}
-
-impl EnvelopeBodyContents for SendItem {
-    fn name() -> &'static str {
-        "SendItem"
-    }
-}
-
-/// A response to a [`SendItem`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/senditemresponse>
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct SendItemResponse {
-    pub response_messages: ResponseMessages,
-}
-
-impl OperationResponse for SendItemResponse {}
-
-impl EnvelopeBodyContents for SendItemResponse {
-    fn name() -> &'static str {
-        "SendItemResponse"
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "PascalCase")]
-pub struct ResponseMessages {
-    pub send_item_response_message: Vec<ResponseClass<SendItemResponseMessage>>,
-}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
@@ -78,7 +44,8 @@ pub struct SendItemResponseMessage {}
 mod test {
     use crate::{test_utils::assert_deserialized_content, ResponseClass};
 
-    use super::{ResponseMessages, SendItemResponse, SendItemResponseMessage};
+    use super::{SendItemResponse, SendItemResponseMessage};
+    use crate::ResponseMessages;
 
     #[test]
     fn test_deserialize_send_item_response() {
@@ -94,7 +61,9 @@ mod test {
 
         let expected = SendItemResponse {
             response_messages: ResponseMessages {
-                send_item_response_message: vec![ResponseClass::Success(SendItemResponseMessage {})],
+                response_messages: vec![ResponseClass::Success(
+                    SendItemResponseMessage {},
+                )],
             },
         };
 

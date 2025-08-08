@@ -2,19 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    types::sealed::EnvelopeBodyContents, DateTime, Operation, OperationResponse, ResponseClass,
-    MESSAGES_NS_URI, TYPES_NS_URI,
-};
+use crate::{DateTime, ResponseClass, MESSAGES_NS_URI, TYPES_NS_URI};
 
 /// A request to get user availability information.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getuseravailability>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(GetUserAvailabilityResponseMessage)]
 pub struct GetUserAvailability {
     /// The time zone context for the request.
     #[xml_struct(ns_prefix = "t")]
@@ -29,18 +28,9 @@ pub struct GetUserAvailability {
     pub free_busy_view_options: FreeBusyViewOptions,
 }
 
-impl Operation for GetUserAvailability {
-    type Response = GetUserAvailabilityResponse;
-}
-
-impl EnvelopeBodyContents for GetUserAvailability {
-    fn name() -> &'static str {
-        "GetUserAvailability"
-    }
-}
 
 /// Time zone information for the request.
-#[derive(Clone, Debug, XmlSerialize, Deserialize)]
+#[derive(Clone, Debug, XmlSerialize, Deserialize, PartialEq, Eq)]
 #[xml_struct(default_ns = TYPES_NS_URI)]
 #[serde(rename_all = "PascalCase")]
 pub struct SerializableTimeZone {
@@ -56,7 +46,7 @@ pub struct SerializableTimeZone {
 }
 
 /// Time zone time information.
-#[derive(Clone, Debug, XmlSerialize, Deserialize)]
+#[derive(Clone, Debug, XmlSerialize, Deserialize, PartialEq, Eq)]
 #[xml_struct(default_ns = TYPES_NS_URI)]
 #[serde(rename_all = "PascalCase")]
 pub struct SerializableTimeZoneTime {
@@ -77,7 +67,7 @@ pub struct SerializableTimeZoneTime {
 }
 
 /// Days of the week.
-#[derive(Clone, Debug, XmlSerialize, Deserialize)]
+#[derive(Clone, Debug, XmlSerialize, Deserialize, PartialEq, Eq)]
 #[xml_struct(text)]
 pub enum DayOfWeek {
     Sunday,
@@ -148,7 +138,7 @@ pub struct Duration {
 }
 
 /// The type of free/busy view to return.
-#[derive(Clone, Debug, XmlSerialize, Deserialize)]
+#[derive(Clone, Debug, XmlSerialize, Deserialize, PartialEq, Eq)]
 #[xml_struct(text)]
 pub enum FreeBusyViewType {
     None,
@@ -159,26 +149,15 @@ pub enum FreeBusyViewType {
     DetailedMerged,
 }
 
-/// A response to a [`GetUserAvailability`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/getuseravailabilityresponse>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
-pub struct GetUserAvailabilityResponse {
+pub struct GetUserAvailabilityResponseMessage {
     pub free_busy_response_array: Option<FreeBusyResponseArray>,
     pub suggestions_response: Option<SuggestionsResponse>,
 }
 
-impl OperationResponse for GetUserAvailabilityResponse {}
-
-impl EnvelopeBodyContents for GetUserAvailabilityResponse {
-    fn name() -> &'static str {
-        "GetUserAvailabilityResponse"
-    }
-}
-
 /// Array of free/busy responses.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct FreeBusyResponseArray {
     pub free_busy_response: Vec<FreeBusyResponse>,
@@ -188,7 +167,7 @@ pub struct FreeBusyResponseArray {
 pub type FreeBusyResponse = Option<ResponseClass<FreeBusyResponseData>>;
 
 /// Free/busy response data.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct FreeBusyResponseData {
     /// The free/busy view data.
@@ -196,7 +175,7 @@ pub struct FreeBusyResponseData {
 }
 
 /// Free/busy view data for a mailbox.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct FreeBusyView {
     /// The type of free/busy view.
@@ -213,14 +192,14 @@ pub struct FreeBusyView {
 }
 
 /// Array of calendar events.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct CalendarEventArray {
     pub calendar_event: Vec<CalendarEvent>,
 }
 
 /// A calendar event in the free/busy response.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct CalendarEvent {
     /// The start time of the event.
@@ -237,7 +216,7 @@ pub struct CalendarEvent {
 }
 
 /// Details about a calendar event.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct CalendarEventDetails {
     /// The unique identifier of the event.
@@ -266,7 +245,7 @@ pub struct CalendarEventDetails {
 }
 
 /// Working hours information.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct WorkingHours {
     /// The time zone for working hours.
@@ -277,14 +256,14 @@ pub struct WorkingHours {
 }
 
 /// Array of working periods.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct WorkingPeriodArray {
     pub working_period: Vec<WorkingPeriod>,
 }
 
 /// A working period definition.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct WorkingPeriod {
     /// The days of the week for this working period.
@@ -298,7 +277,7 @@ pub struct WorkingPeriod {
 }
 
 /// Days of the week as a bitmask.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub enum DaysOfWeek {
     Sunday,
     Monday,
@@ -313,7 +292,7 @@ pub enum DaysOfWeek {
 }
 
 /// Free/busy status values.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub enum LegacyFreeBusyStatus {
     Free,
     Tentative,
@@ -326,7 +305,7 @@ pub enum LegacyFreeBusyStatus {
 pub type SuggestionsResponse = Option<ResponseClass<SuggestionsResponseData>>;
 
 /// Suggestions response data.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SuggestionsResponseData {
     /// Array of meeting time suggestions.
@@ -334,14 +313,14 @@ pub struct SuggestionsResponseData {
 }
 
 /// Array of suggestion day results.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SuggestionDayResultArray {
     pub suggestion_day_result: Vec<SuggestionDayResult>,
 }
 
 /// Suggestion results for a single day.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SuggestionDayResult {
     /// The date for these suggestions.
@@ -355,14 +334,14 @@ pub struct SuggestionDayResult {
 }
 
 /// Array of meeting time suggestions.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SuggestionArray {
     pub suggestion: Vec<Suggestion>,
 }
 
 /// A meeting time suggestion.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct Suggestion {
     /// The suggested meeting time.
@@ -379,7 +358,7 @@ pub struct Suggestion {
 }
 
 /// Array of attendee conflict data.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct AttendeeConflictDataArray {
     pub unknown_attendee_conflict_data: Option<Vec<UnknownAttendeeConflictData>>,
@@ -388,21 +367,21 @@ pub struct AttendeeConflictDataArray {
 }
 
 /// Conflict data for unknown attendees.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct UnknownAttendeeConflictData {
     // Add fields as needed based on EWS schema
 }
 
 /// Conflict data for individual attendees.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct IndividualAttendeeConflictData {
     pub busy_type: LegacyFreeBusyStatus,
 }
 
 /// Conflict data for group attendees.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct GroupAttendeeConflictData {
     pub number_of_members: Option<i32>,
@@ -412,7 +391,7 @@ pub struct GroupAttendeeConflictData {
 }
 
 /// Quality rating for suggestions.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub enum SuggestionQuality {
     Excellent,
     Good,
@@ -423,15 +402,6 @@ pub enum SuggestionQuality {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::sealed::EnvelopeBodyContents;
-
-    #[test]
-    fn test_get_user_availability_operation_name() {
-        assert_eq!(
-            <GetUserAvailability as EnvelopeBodyContents>::name(),
-            "GetUserAvailability"
-        );
-    }
 
     #[test]
     fn test_get_user_availability_creation() {

@@ -148,11 +148,11 @@ pub struct ResponseObjects {
     /// Available reply action for the message.
     #[xml_struct(ns_prefix = "t")]
     pub reply_to_item: Option<MessageResponseObject>,
-    
+
     /// Available reply-all action for the message.
     #[xml_struct(ns_prefix = "t")]
     pub reply_all_to_item: Option<MessageResponseObject>,
-    
+
     /// Available forward action for the message.
     #[xml_struct(ns_prefix = "t")]
     pub forward_item: Option<MessageResponseObject>,
@@ -372,19 +372,13 @@ pub enum RestrictionType {
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/and>
 #[derive(Clone, Debug, XmlSerialize)]
-pub struct AndRestriction(
-    #[xml_struct(ns_prefix = "t")]
-    pub Vec<Restriction>
-);
+pub struct AndRestriction(#[xml_struct(ns_prefix = "t")] pub Vec<Restriction>);
 
 /// Represents a logical OR operation between multiple restrictions.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/or>
 #[derive(Clone, Debug, XmlSerialize)]
-pub struct OrRestriction(
-    #[xml_struct(ns_prefix = "t")]
-    pub Vec<Restriction>
-);
+pub struct OrRestriction(#[xml_struct(ns_prefix = "t")] pub Vec<Restriction>);
 
 // TODO: Implement NOT restriction once Box<T> serialization is resolved
 // /// Represents a logical NOT operation that negates another restriction.
@@ -620,7 +614,7 @@ impl ItemId {
             change_key: None,
         }
     }
-    
+
     /// Creates a new ItemId with the given ID and change key.
     pub fn with_change_key(id: impl Into<String>, change_key: impl Into<String>) -> Self {
         Self {
@@ -786,7 +780,7 @@ impl Folder {
             unread_count: None,
         }
     }
-    
+
     pub fn new_calendar_folder(display_name: impl Into<String>) -> Self {
         Self::CalendarFolder {
             folder_id: None,
@@ -798,7 +792,7 @@ impl Folder {
             extended_property: None,
         }
     }
-    
+
     pub fn new_contacts_folder(display_name: impl Into<String>) -> Self {
         Self::ContactsFolder {
             folder_id: None,
@@ -810,7 +804,7 @@ impl Folder {
             extended_property: None,
         }
     }
-    
+
     pub fn new_search_folder(display_name: impl Into<String>) -> Self {
         Self::SearchFolder {
             folder_id: None,
@@ -822,7 +816,7 @@ impl Folder {
             extended_property: None,
         }
     }
-    
+
     pub fn new_tasks_folder(display_name: impl Into<String>) -> Self {
         Self::TasksFolder {
             folder_id: None,
@@ -919,25 +913,30 @@ pub struct DateTime(pub time::OffsetDateTime);
 // Helper module for flexible datetime deserialization
 mod flexible_datetime {
     use serde::{Deserialize, Deserializer};
-    
+
     pub fn deserialize<'de, D>(deserializer: D) -> Result<time::OffsetDateTime, D::Error>
     where
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        
+
         // The time crate's ISO8601 parser can handle both formats if we configure it properly
         // First try with the default ISO8601 parser which expects timezone
-        if let Ok(dt) = time::OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
+        if let Ok(dt) =
+            time::OffsetDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT)
+        {
             return Ok(dt);
         }
-        
+
         // If no timezone, parse as PrimitiveDateTime and assume UTC
         // This handles the Exchange Server case where timezone is omitted
-        if let Ok(pdt) = time::PrimitiveDateTime::parse(&s, &time::format_description::well_known::Iso8601::DEFAULT) {
+        if let Ok(pdt) = time::PrimitiveDateTime::parse(
+            &s,
+            &time::format_description::well_known::Iso8601::DEFAULT,
+        ) {
             return Ok(pdt.assume_utc());
         }
-        
+
         Err(serde::de::Error::custom(format!(
             "Unable to parse datetime '{s}'. Expected ISO8601 format with or without timezone."
         )))
@@ -1075,11 +1074,11 @@ pub struct Message {
     pub display_to: Option<String>,
 
     /// Whether the item has (non-inline) attachments.
-    /// 
-    /// **Important**: According to Microsoft's EWS specification, inline attachments 
-    /// (embedded images, etc.) are considered "hidden attachments" and do NOT affect 
+    ///
+    /// **Important**: According to Microsoft's EWS specification, inline attachments
+    /// (embedded images, etc.) are considered "hidden attachments" and do NOT affect
     /// this property. If an item only has inline attachments, this will be `false`.
-    /// 
+    ///
     /// To check for any attachments including inline ones, use `has_any_attachments()`.
     /// To access all attachments including inline ones, check the `attachments` field directly.
     ///
@@ -1971,12 +1970,12 @@ mod tests {
 
         // Verify that HasAttachments is false (as per EWS specification for inline attachments)
         assert_eq!(message.has_attachments, Some(false));
-        
+
         // Verify that attachments are still present
         assert!(message.attachments.is_some());
         let attachments = message.attachments.as_ref().unwrap();
         assert_eq!(attachments.inner.len(), 1);
-        
+
         // Verify it's an inline attachment
         if let Attachment::FileAttachment { is_inline, .. } = &attachments.inner[0] {
             assert_eq!(*is_inline, Some(true));

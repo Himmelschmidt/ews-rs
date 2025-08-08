@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    types::sealed::EnvelopeBodyContents, BaseFolderId, FolderShape, Folders, Operation,
-    OperationResponse, Paging, ResponseClass, Restriction, Traversal, MESSAGES_NS_URI,
+    BaseFolderId, FolderShape, Folders, Paging, Restriction, Traversal, MESSAGES_NS_URI,
 };
 
 /// A request to find folders matching certain criteria.
@@ -15,6 +15,7 @@ use crate::{
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolder>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
+#[operation_response(FindFolderResponseMessage)]
 pub struct FindFolder {
     /// The traversal method for the find operation.
     #[xml_struct(attribute)]
@@ -34,46 +35,11 @@ pub struct FindFolder {
     pub parent_folder_ids: Vec<BaseFolderId>,
 }
 
-impl Operation for FindFolder {
-    type Response = FindFolderResponse;
-}
-
-impl EnvelopeBodyContents for FindFolder {
-    fn name() -> &'static str {
-        "FindFolder"
-    }
-}
-
-/// A response to a [`FindFolder`] request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponse>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct FindFolderResponse {
-    pub response_messages: FindFolderResponseMessages,
-}
-
-impl OperationResponse for FindFolderResponse {}
-
-impl EnvelopeBodyContents for FindFolderResponse {
-    fn name() -> &'static str {
-        "FindFolderResponse"
-    }
-}
-
-/// A collection of responses for individual entities within a request.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responsemessages>
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct FindFolderResponseMessages {
-    pub find_folder_response_message: Vec<ResponseClass<FindFolderResponseMessage>>,
-}
 
 /// A response to a request for finding folders.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/findfolderresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct FindFolderResponseMessage {
     /// The root folder containing the search results.
@@ -83,7 +49,7 @@ pub struct FindFolderResponseMessage {
 /// The root folder element in find responses.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/rootfolder-findfolderresponsemessage>
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct RootFolder {
     #[serde(rename = "@IndexedPagingOffset")]
