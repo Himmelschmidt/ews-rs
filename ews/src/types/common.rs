@@ -855,6 +855,7 @@ pub struct Folders {
 #[non_exhaustive]
 pub enum RealItem {
     Message(Message),
+    CalendarItem(Message),
     MeetingMessage(Message),
     MeetingRequest(Message),
     MeetingResponse(Message),
@@ -866,6 +867,7 @@ impl RealItem {
     pub fn inner_message(&self) -> &Message {
         match self {
             RealItem::Message(message)
+            | RealItem::CalendarItem(message)
             | RealItem::MeetingMessage(message)
             | RealItem::MeetingRequest(message)
             | RealItem::MeetingResponse(message)
@@ -877,6 +879,7 @@ impl RealItem {
     pub fn into_inner_message(self) -> Message {
         match self {
             RealItem::Message(message)
+            | RealItem::CalendarItem(message)
             | RealItem::MeetingMessage(message)
             | RealItem::MeetingRequest(message)
             | RealItem::MeetingResponse(message)
@@ -894,13 +897,13 @@ impl RealItem {
 pub enum AttachmentItem {
     // Item(Item),
     Message(Message),
-    // CalendarItem(CalendarItem),
+    CalendarItem(Message),
     // Contact(Contact),
     // Task(Task),
-    // MeetingMessage(MeetingMessage),
-    // MeetingRequest(MeetingRequest),
-    // MeetingResponse(MeetingResponse),
-    // MeetingCancellation(MeetingCancellation),
+    MeetingMessage(Message),
+    MeetingRequest(Message),
+    MeetingResponse(Message),
+    MeetingCancellation(Message),
 }
 
 /// A date and time with second precision.
@@ -1982,6 +1985,78 @@ mod tests {
         } else {
             panic!("Expected FileAttachment");
         }
+
+        Ok(())
+    }
+
+    /// Tests deserialization of a CalendarItem which is commonly found with calendar invites.
+    #[test]
+    fn test_calendar_item_deserialization() -> Result<(), Error> {
+        // XML representing a CalendarItem (commonly seen with calendar invites)
+        let xml = r#"<Items xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:CalendarItem>
+                <t:Subject>Team Meeting</t:Subject>
+                <t:Body BodyType="Text">Weekly team sync meeting</t:Body>
+                <t:HasAttachments>false</t:HasAttachments>
+            </t:CalendarItem>
+        </Items>"#;
+
+        // Deserialize the raw XML
+        let mut de = quick_xml::de::Deserializer::from_reader(xml.as_bytes());
+        let items: Items = serde_path_to_error::deserialize(&mut de)?;
+
+        // Verify that we have one item and it's a CalendarItem
+        assert_eq!(items.inner.len(), 1);
+
+        if let RealItem::CalendarItem(message) = &items.inner[0] {
+            assert_eq!(message.subject, Some("Team Meeting".to_string()));
+            assert_eq!(message.has_attachments, Some(false));
+        } else {
+            panic!("Expected CalendarItem but got a different variant");
+        }
+
+        Ok(())
+    }
+
+    /// Tests deserialization of various meeting-related items.
+    #[test]
+    fn test_meeting_item_variants_deserialization() -> Result<(), Error> {
+        // Test MeetingRequest
+        let meeting_request_xml = r#"<Items xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:MeetingRequest>
+                <t:Subject>Project Review Meeting</t:Subject>
+                <t:Body BodyType="Text">Please join the project review meeting</t:Body>
+            </t:MeetingRequest>
+        </Items>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(meeting_request_xml.as_bytes());
+        let items: Items = serde_path_to_error::deserialize(&mut de)?;
+        assert_eq!(items.inner.len(), 1);
+        assert!(matches!(&items.inner[0], RealItem::MeetingRequest(_)));
+
+        // Test MeetingResponse
+        let meeting_response_xml = r#"<Items xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:MeetingResponse>
+                <t:Subject>Accepted: Project Review Meeting</t:Subject>
+            </t:MeetingResponse>
+        </Items>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(meeting_response_xml.as_bytes());
+        let items: Items = serde_path_to_error::deserialize(&mut de)?;
+        assert_eq!(items.inner.len(), 1);
+        assert!(matches!(&items.inner[0], RealItem::MeetingResponse(_)));
+
+        // Test MeetingCancellation
+        let meeting_cancel_xml = r#"<Items xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:MeetingCancellation>
+                <t:Subject>Cancelled: Project Review Meeting</t:Subject>
+            </t:MeetingCancellation>
+        </Items>"#;
+
+        let mut de = quick_xml::de::Deserializer::from_reader(meeting_cancel_xml.as_bytes());
+        let items: Items = serde_path_to_error::deserialize(&mut de)?;
+        assert_eq!(items.inner.len(), 1);
+        assert!(matches!(&items.inner[0], RealItem::MeetingCancellation(_)));
 
         Ok(())
     }
