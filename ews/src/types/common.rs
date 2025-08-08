@@ -1593,7 +1593,8 @@ pub enum Attachment {
         /// The MIME type of the attachment's content.
         ///
         /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/contenttype>
-        content_type: String,
+        /// Sometimes there isn't a content type on an attachment
+        content_type: Option<String>,
 
         /// An arbitrary identifier for the attachment.
         ///
@@ -2119,6 +2120,83 @@ mod tests {
         assert!(!no_attachments_message.has_any_attachments());
         assert!(!no_attachments_message.has_inline_attachments());
         assert!(!no_attachments_message.has_regular_attachments());
+
+        Ok(())
+    }
+
+    /// Tests deserialization of mixed attachment types (ItemAttachment and FileAttachment)
+    /// This reproduces the issue from GitHub issue #22 where ItemAttachment lacks ContentType
+    #[test]
+    fn test_mixed_attachments_item_without_content_type() -> Result<(), Error> {
+        // XML representing a message with both ItemAttachment (missing ContentType) and FileAttachment
+        let xml = r#"<Message xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+            <t:Subject>Test Meeting - Walkthrough Invite</t:Subject>
+            <t:HasAttachments>true</t:HasAttachments>
+            <t:Attachments>
+                <t:ItemAttachment>
+                    <t:AttachmentId Id="AAMkADExampleItemAttachmentIdForTesting123"/>
+                    <t:Name>Test Meeting - Walkthrough Invite</t:Name>
+                    <t:Size>14300</t:Size>
+                    <t:LastModifiedTime>2025-01-01T12:00:00</t:LastModifiedTime>
+                    <t:IsInline>false</t:IsInline>
+                </t:ItemAttachment>
+                <t:FileAttachment>
+                    <t:AttachmentId Id="AAMkADExampleFileAttachmentIdForTesting456"/>
+                    <t:Name>test-image.png</t:Name>
+                    <t:ContentType>image/png</t:ContentType>
+                    <t:ContentId>test-image.png@example.test</t:ContentId>
+                    <t:Size>14726</t:Size>
+                    <t:LastModifiedTime>2025-01-01T12:00:00</t:LastModifiedTime>
+                    <t:IsInline>true</t:IsInline>
+                    <t:IsContactPhoto>false</t:IsContactPhoto>
+                </t:FileAttachment>
+            </t:Attachments>
+        </Message>"#;
+
+        // This should work after our fix - ItemAttachment is missing ContentType
+        let mut de = quick_xml::de::Deserializer::from_reader(xml.as_bytes());
+        let message: Message = serde_path_to_error::deserialize(&mut de)?;
+
+        // Verify that HasAttachments is true
+        assert_eq!(message.has_attachments, Some(true));
+
+        // Verify that attachments are present
+        assert!(message.attachments.is_some());
+        let attachments = message.attachments.as_ref().unwrap();
+        assert_eq!(attachments.inner.len(), 2);
+
+        // Verify first attachment is ItemAttachment without ContentType
+        if let Attachment::ItemAttachment {
+            name,
+            is_inline,
+            content_type,
+            ..
+        } = &attachments.inner[0]
+        {
+            assert_eq!(name, "Test Meeting - Walkthrough Invite");
+            assert_eq!(*is_inline, Some(false));
+            // ContentType should be None since it wasn't provided in XML (this is the key fix!)
+            assert_eq!(content_type.as_ref(), None);
+        } else {
+            panic!("Expected ItemAttachment");
+        }
+
+        // Verify second attachment is FileAttachment with ContentType
+        if let Attachment::FileAttachment {
+            name,
+            is_inline,
+            content_type,
+            content_id,
+            ..
+        } = &attachments.inner[1]
+        {
+            assert_eq!(name, "test-image.png");
+            assert_eq!(*is_inline, Some(true));
+            assert_eq!(content_type, "image/png");
+            assert_eq!(content_id.as_ref().unwrap(), "test-image.png@example.test");
+        } else {
+            panic!("Expected FileAttachment");
+        }
 
         Ok(())
     }
