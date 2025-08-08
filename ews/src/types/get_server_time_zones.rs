@@ -28,7 +28,6 @@ pub struct GetServerTimeZones {
     pub ids: Option<TimeZoneIds>,
 }
 
-
 /// Container for time zone identifiers.
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
@@ -37,7 +36,6 @@ pub struct TimeZoneIds {
     #[xml_struct(ns_prefix = "t")]
     pub id: Vec<String>,
 }
-
 
 /// A response to a request for server time zones.
 ///
@@ -158,7 +156,6 @@ pub struct TimeZoneTransitionTo {
 #[cfg(test)]
 mod tests {
     use super::*;
-
 
     #[test]
     fn test_get_server_time_zones_creation() {

@@ -26,7 +26,6 @@ pub struct CreateAttachment {
     pub attachments: Vec<NewAttachment>,
 }
 
-
 /// An attachment to be created, without an existing attachment ID.
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(variant_ns_prefix = "t")]
@@ -147,7 +146,6 @@ pub struct EmailAddressType {
     /// The routing type (typically "SMTP").
     pub routing_type: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]

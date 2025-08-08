@@ -27,7 +27,6 @@ pub struct GetAttachment {
     pub attachment_ids: Vec<AttachmentId>,
 }
 
-
 /// Describes what information to include in attachment responses.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/attachmentshape>
@@ -58,7 +57,6 @@ pub enum BodyType {
     #[serde(rename = "Best")]
     Best,
 }
-
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]

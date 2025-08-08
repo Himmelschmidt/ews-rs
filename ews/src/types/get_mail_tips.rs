@@ -25,7 +25,6 @@ pub struct GetMailTips {
     pub mail_tips_requested: MailTipsRequested,
 }
 
-
 /// Types of mail tips that can be requested.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/mailtipsrequested>
@@ -43,7 +42,6 @@ pub enum MailTipsRequested {
     ModerationStatus,
     InvalidRecipient,
 }
-
 
 /// A response to a request for getting mail tips.
 ///

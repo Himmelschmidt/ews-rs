@@ -28,7 +28,6 @@ pub struct GetUserAvailability {
     pub free_busy_view_options: FreeBusyViewOptions,
 }
 
-
 /// Time zone information for the request.
 #[derive(Clone, Debug, XmlSerialize, Deserialize, PartialEq, Eq)]
 #[xml_struct(default_ns = TYPES_NS_URI)]

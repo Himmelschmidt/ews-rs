@@ -38,7 +38,6 @@ pub struct FindItem {
     pub parent_folder_ids: Vec<BaseFolderId>,
 }
 
-
 /// A response to a request for finding items.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/finditemresponsemessage>

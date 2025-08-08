@@ -40,8 +40,7 @@ pub struct EmptyFolderResponseMessage {}
 #[cfg(test)]
 mod test {
     use crate::{
-        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, ResponseClass,
-        Operation,
+        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation, ResponseClass,
     };
 
     use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage};
@@ -61,9 +60,7 @@ mod test {
 
         let expected = EmptyFolderResponse {
             response_messages: ResponseMessages {
-                response_messages: vec![ResponseClass::Success(
-                    EmptyFolderResponseMessage {},
-                )],
+                response_messages: vec![ResponseClass::Success(EmptyFolderResponseMessage {})],
             },
         };
 

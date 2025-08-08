@@ -34,7 +34,6 @@ pub struct ResolveNames {
     pub unresolved_entry: String,
 }
 
-
 /// Defines the search scope for the ResolveNames operation.
 #[derive(Clone, Copy, Debug, XmlSerialize)]
 #[xml_struct(text)]
@@ -60,7 +59,6 @@ pub enum ContactDataShape {
     /// All properties of the contact.
     AllProperties,
 }
-
 
 /// A response message for an individual ResolveNames request.
 ///
@@ -311,5 +309,4 @@ mod tests {
             Some(ContactDataShape::Default)
         ));
     }
-
 }

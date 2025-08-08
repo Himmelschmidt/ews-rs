@@ -35,7 +35,6 @@ pub struct SendItem {
     pub saved_item_folder_id: Option<BaseFolderId>,
 }
 
-
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "PascalCase")]
 pub struct SendItemResponseMessage {}
@@ -61,9 +60,7 @@ mod test {
 
         let expected = SendItemResponse {
             response_messages: ResponseMessages {
-                response_messages: vec![ResponseClass::Success(
-                    SendItemResponseMessage {},
-                )],
+                response_messages: vec![ResponseClass::Success(SendItemResponseMessage {})],
             },
         };
 

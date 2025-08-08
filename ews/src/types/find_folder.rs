@@ -6,9 +6,7 @@ use ews_proc_macros::operation_response;
 use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
-use crate::{
-    BaseFolderId, FolderShape, Folders, Paging, Restriction, Traversal, MESSAGES_NS_URI,
-};
+use crate::{BaseFolderId, FolderShape, Folders, Paging, Restriction, Traversal, MESSAGES_NS_URI};
 
 /// A request to find folders matching certain criteria.
 ///
@@ -34,7 +32,6 @@ pub struct FindFolder {
     /// The parent folder IDs to search in.
     pub parent_folder_ids: Vec<BaseFolderId>,
 }
-
 
 /// A response to a request for finding folders.
 ///

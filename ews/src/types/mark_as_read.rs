@@ -27,7 +27,6 @@ pub struct MarkAsRead {
     pub item_ids: Vec<BaseItemId>,
 }
 
-
 /// A response to a request for marking an item as read/unread.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/markasreadresponsemessage>
