@@ -8,24 +8,22 @@ use xml_struct::XmlSerialize;
 
 use crate::{BaseFolderId, DeleteType, MESSAGES_NS_URI};
 
-/// A request to delete all items from one or more folders.
+/// A request to empty one or more folders.
 ///
 /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/emptyfolder>
 #[derive(Clone, Debug, XmlSerialize)]
 #[xml_struct(default_ns = MESSAGES_NS_URI)]
 #[operation_response(EmptyFolderResponseMessage)]
 pub struct EmptyFolder {
-    /// The method the EWS server will use to perform the deletion of items.
+    /// The method the EWS server will use to perform deletions.
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/emptyfolder#deletetype-attribute>
     #[xml_struct(attribute)]
     pub delete_type: DeleteType,
 
-    /// Whether to delete subfolders as well.
-    ///
-    /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/emptyfolder#deletesubfolders-attribute>
+    /// Whether subfolders should be deleted as part of the operation.
     #[xml_struct(attribute)]
-    pub delete_subfolders: bool,
+    pub delete_sub_folders: bool,
 
     /// A list of folders to empty.
     ///
@@ -33,53 +31,51 @@ pub struct EmptyFolder {
     pub folder_ids: Vec<BaseFolderId>,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "PascalCase")]
 pub struct EmptyFolderResponseMessage {}
 
 #[cfg(test)]
 mod test {
     use crate::{
-        test_utils::assert_deserialized_content, BaseFolderId, DeleteType, Operation, ResponseClass,
+        empty_folder::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage},
+        test_utils::{assert_deserialized_content, assert_serialized_content},
+        BaseFolderId, DeleteType, ResponseClass, ResponseMessages,
     };
 
-    use super::{EmptyFolder, EmptyFolderResponse, EmptyFolderResponseMessage};
-    use crate::ResponseMessages;
+    #[test]
+    fn test_serialize_empty_folder() {
+        let empty_folder = EmptyFolder {
+            delete_type: DeleteType::HardDelete,
+            delete_sub_folders: true,
+            folder_ids: vec![BaseFolderId::FolderId {
+                id: "AAMkADEzOTExYZRAAA=".to_string(),
+                change_key: Some("AQAAAAA3vA==".to_string()),
+            }],
+        };
+
+        let expected = r#"<EmptyFolder xmlns="http://schemas.microsoft.com/exchange/services/2006/messages" DeleteType="HardDelete" DeleteSubFolders="true"><FolderIds><t:FolderId Id="AAMkADEzOTExYZRAAA=" ChangeKey="AQAAAAA3vA=="/></FolderIds></EmptyFolder>"#;
+
+        assert_serialized_content(&empty_folder, "EmptyFolder", expected);
+    }
 
     #[test]
     fn test_deserialize_empty_folder_response() {
-        let content = r#"<EmptyFolderResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
-                        xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types"
-                        xmlns="http://schemas.microsoft.com/exchange/services/2006/messages">
-                    <m:ResponseMessages>
-                        <m:EmptyFolderResponseMessage ResponseClass="Success">
-                            <m:ResponseCode>NoError</m:ResponseCode>
-                        </m:EmptyFolderResponseMessage>
-                    </m:ResponseMessages>
-                    </EmptyFolderResponse>"#;
+        let content = r#"<m:EmptyFolderResponse xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
+            xmlns:t="http://schemas.microsoft.com/exchange/services/2006/types">
+                <m:ResponseMessages>
+                  <m:EmptyFolderResponseMessage ResponseClass="Success">
+                    <m:ResponseCode>NoError</m:ResponseCode>
+                  </m:EmptyFolderResponseMessage>
+                </m:ResponseMessages>
+              </m:EmptyFolderResponse>"#;
 
-        let expected = EmptyFolderResponse {
+        let response = EmptyFolderResponse {
             response_messages: ResponseMessages {
                 response_messages: vec![ResponseClass::Success(EmptyFolderResponseMessage {})],
             },
         };
 
-        assert_deserialized_content(content, expected);
-    }
-
-    #[test]
-    fn test_create_empty_folder_request() {
-        let operation = EmptyFolder {
-            delete_type: DeleteType::MoveToDeletedItems,
-            delete_subfolders: false,
-            folder_ids: vec![BaseFolderId::DistinguishedFolderId {
-                id: "junkemail".to_string(),
-                change_key: None,
-            }],
-        };
-
-        assert_eq!(operation.name(), "EmptyFolder");
-        assert!(!operation.delete_subfolders);
-        assert_eq!(operation.folder_ids.len(), 1);
+        assert_deserialized_content(content, response);
     }
 }

@@ -854,8 +854,8 @@ pub struct Folders {
 #[xml_struct(variant_ns_prefix = "t")]
 #[non_exhaustive]
 pub enum RealItem {
-    Message(Message),
     CalendarItem(Message),
+    Message(Message),
     MeetingMessage(Message),
     MeetingRequest(Message),
     MeetingResponse(Message),
@@ -866,8 +866,8 @@ impl RealItem {
     /// Return the [`Message`] object contained within this [`RealItem`].
     pub fn inner_message(&self) -> &Message {
         match self {
-            RealItem::Message(message)
-            | RealItem::CalendarItem(message)
+            RealItem::CalendarItem(message)
+            | RealItem::Message(message)
             | RealItem::MeetingMessage(message)
             | RealItem::MeetingRequest(message)
             | RealItem::MeetingResponse(message)
@@ -878,8 +878,8 @@ impl RealItem {
     /// Take ownership of the inner [`Message`].
     pub fn into_inner_message(self) -> Message {
         match self {
-            RealItem::Message(message)
-            | RealItem::CalendarItem(message)
+            RealItem::CalendarItem(message)
+            | RealItem::Message(message)
             | RealItem::MeetingMessage(message)
             | RealItem::MeetingRequest(message)
             | RealItem::MeetingResponse(message)
@@ -1129,7 +1129,7 @@ pub struct Message {
     pub is_response_requested: Option<bool>,
 
     #[xml_struct(ns_prefix = "t")]
-    pub reply_to: Option<Recipient>,
+    pub reply_to: Option<ArrayOfRecipients>,
 
     #[xml_struct(ns_prefix = "t")]
     pub received_by: Option<Recipient>,
@@ -1157,6 +1157,17 @@ pub struct Message {
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/responseobjects>
     #[xml_struct(ns_prefix = "t")]
     pub response_objects: Option<ResponseObjects>,
+
+    /// A short preview of the first 256 characters of an item.
+    ///
+    /// This value isn't documented for either the `Item` or `Message`
+    /// interfaces in the Exchange documentation. However, the element itself is
+    /// documented at
+    /// <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/preview-ex15websvcsotherref>
+    ///
+    /// This element was introduced in Exchange 2013.
+    #[xml_struct(ns_prefix = "t")]
+    pub preview: Option<String>,
 }
 
 impl Message {
@@ -1213,6 +1224,7 @@ impl Message {
             conversation_id: None,
             references: None,
             response_objects: None,
+            preview: None,
         }
     }
 
@@ -1335,7 +1347,7 @@ impl Recipient {
         Self {
             mailbox: Mailbox {
                 name: None,
-                email_address: email_address.into(),
+                email_address: Some(email_address.into()),
                 routing_type: None,
                 mailbox_type: None,
                 item_id: None,
@@ -1348,7 +1360,7 @@ impl Recipient {
         Self {
             mailbox: Mailbox {
                 name: Some(name.into()),
-                email_address: email_address.into(),
+                email_address: Some(email_address.into()),
                 routing_type: None,
                 mailbox_type: None,
                 item_id: None,
@@ -1407,14 +1419,21 @@ pub struct Mailbox {
     #[xml_struct(ns_prefix = "t")]
     pub name: Option<String>,
 
-    /// The email address for this mailbox.
+    /// The email address for this mailbox. This can be [`None`] in some cases,
+    /// e.g. if it designates an automated system account (see
+    /// <https://bugzilla.mozilla.org/show_bug.cgi?id=1994719> for an example).
     #[xml_struct(ns_prefix = "t")]
-    pub email_address: String,
+    pub email_address: Option<String>,
 
     /// The protocol used in routing to this mailbox.
     ///
     /// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/routingtype-emailaddress>
-    pub routing_type: Option<RoutingType>,
+    ///
+    /// Note: Although the documentation says that `SMTP` and `EX` are the only
+    /// possible values, it also appears that `SYSTEM` is a value that sometimes
+    /// occurs. Since the documentation isn't clear, this is a free-form string
+    /// field.
+    pub routing_type: Option<String>,
 
     /// The type of sender/recipient represented by this mailbox.
     ///
@@ -1431,7 +1450,7 @@ impl Mailbox {
     pub fn new(email_address: impl Into<String>) -> Self {
         Self {
             name: None,
-            email_address: email_address.into(),
+            email_address: Some(email_address.into()),
             routing_type: None,
             mailbox_type: None,
             item_id: None,
@@ -1442,23 +1461,12 @@ impl Mailbox {
     pub fn with_name(email_address: impl Into<String>, name: impl Into<String>) -> Self {
         Self {
             name: Some(name.into()),
-            email_address: email_address.into(),
+            email_address: Some(email_address.into()),
             routing_type: None,
             mailbox_type: None,
             item_id: None,
         }
     }
-}
-
-/// A protocol used in routing mail.
-///
-/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/routingtype-emailaddress>
-#[derive(Clone, Copy, Debug, Default, Deserialize, XmlSerialize, PartialEq, Eq)]
-#[xml_struct(text)]
-pub enum RoutingType {
-    #[default]
-    SMTP,
-    EX,
 }
 
 /// The type of sender or recipient a mailbox represents.
@@ -1747,6 +1755,88 @@ pub struct InternetMessageHeader {
     pub value: String,
 }
 
+/// View for `FindItem` and `FindConversation` operations
+///
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/indexedpageitemview>
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/fractionalpageitemview>
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/calendarview>
+/// See <https://learn.microsoft.com/en-us/exchange/client-developer/web-service-reference/contactsview>
+#[derive(Clone, Debug, XmlSerialize)]
+pub enum View {
+    /// Describes how paged conversation or item information is
+    /// returned for a `FindItem` operation or `FindConversation` operation request.
+    IndexedPageItemView {
+        #[xml_struct(attribute)]
+        max_entries_returned: Option<usize>,
+
+        #[xml_struct(attribute)]
+        base_point: BasePoint,
+
+        #[xml_struct(attribute)]
+        offset: usize,
+    },
+
+    /// Describes where the paged view starts and the
+    /// maximum number of items returned in a `FindItem` request.
+    FractionalPageItemView {
+        /// Identifies the maximum number of results to return in the FindItem response.
+        /// If this attribute is not specified, the call will return all available items.
+        #[xml_struct(attribute)]
+        max_entries_returned: Option<usize>,
+
+        /// Represents the numerator of the fractional offset from the start of the result set.
+        /// The numerator must be equal to or less than the denominator.
+        /// This attribute must represent an integral value that is equal to or greater than zero.
+        #[xml_struct(attribute)]
+        numerator: usize,
+
+        /// Represents the denominator of the fractional offset from the start
+        /// of the total number of items in the result set.
+        /// This attribute must represent an integral value that is greater than one.
+        #[xml_struct(attribute)]
+        denominator: usize,
+    },
+
+    CalendarView {
+        /// Describes the maximum number of results to return in the response.
+        #[xml_struct(attribute)]
+        max_entries_returned: Option<usize>,
+
+        #[xml_struct(attribute)]
+        start_date: String,
+
+        #[xml_struct(attribute)]
+        end_date: String,
+    },
+
+    ContactsView {
+        /// Describes the maximum number of results to return in the response.
+        #[xml_struct(attribute)]
+        max_entries_returned: Option<usize>,
+
+        #[xml_struct(attribute)]
+        initial_name: Option<String>,
+
+        #[xml_struct(attribute)]
+        final_name: Option<String>,
+    },
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "PascalCase")]
+pub struct Groups {
+    #[serde(rename = "$value", default)]
+    pub inner: Vec<GroupedItems>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "PascalCase")]
+pub struct GroupedItems {
+    pub group_index: Option<usize>,
+
+    pub items: Items,
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -1761,7 +1851,7 @@ mod tests {
         let alice = Recipient {
             mailbox: Mailbox {
                 name: Some("Alice Test".into()),
-                email_address: "alice@test.com".into(),
+                email_address: Some("alice@test.com".into()),
                 routing_type: None,
                 mailbox_type: None,
                 item_id: None,
@@ -1771,17 +1861,27 @@ mod tests {
         let bob = Recipient {
             mailbox: Mailbox {
                 name: Some("Bob Test".into()),
-                email_address: "bob@test.com".into(),
+                email_address: Some("bob@test.com".into()),
                 routing_type: None,
                 mailbox_type: None,
                 item_id: None,
             },
         };
 
-        let recipients = ArrayOfRecipients(vec![alice, bob]);
+        let charlie = Recipient {
+            mailbox: Mailbox {
+                name: Some("Charlie Test".into()),
+                email_address: None,
+                routing_type: None,
+                mailbox_type: None,
+                item_id: None,
+            },
+        };
+
+        let recipients = ArrayOfRecipients(vec![alice, bob, charlie]);
 
         // Ensure the structure of the XML document is correct.
-        let expected = "<Recipients><t:Mailbox><t:Name>Alice Test</t:Name><t:EmailAddress>alice@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Bob Test</t:Name><t:EmailAddress>bob@test.com</t:EmailAddress></t:Mailbox></Recipients>";
+        let expected = "<Recipients><t:Mailbox><t:Name>Alice Test</t:Name><t:EmailAddress>alice@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Bob Test</t:Name><t:EmailAddress>bob@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Charlie Test</t:Name></t:Mailbox></Recipients>";
 
         assert_serialized_content(&recipients, "Recipients", expected);
 
@@ -1794,7 +1894,7 @@ mod tests {
     #[test]
     fn deserialize_array_of_recipients() -> Result<(), Error> {
         // The raw XML to deserialize.
-        let xml = "<Recipients><t:Mailbox><t:Name>Alice Test</t:Name><t:EmailAddress>alice@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Bob Test</t:Name><t:EmailAddress>bob@test.com</t:EmailAddress></t:Mailbox></Recipients>";
+        let xml = "<Recipients><t:Mailbox><t:Name>Alice Test</t:Name><t:EmailAddress>alice@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Bob Test</t:Name><t:EmailAddress>bob@test.com</t:EmailAddress></t:Mailbox><t:Mailbox><t:Name>Charlie Test</t:Name></t:Mailbox></Recipients>";
 
         // Deserialize the raw XML, with `serde_path_to_error` to help
         // troubleshoot any issue.
@@ -1803,7 +1903,7 @@ mod tests {
 
         // Ensure we have the right number of recipients in the resulting
         // `ArrayOfRecipients`.
-        assert_eq!(recipients.0.len(), 2);
+        assert_eq!(recipients.0.len(), 3);
 
         // Ensure the first recipient correctly has a name and address.
         assert_eq!(
@@ -1811,7 +1911,7 @@ mod tests {
             &Recipient {
                 mailbox: Mailbox {
                     name: Some("Alice Test".into()),
-                    email_address: "alice@test.com".into(),
+                    email_address: Some("alice@test.com".into()),
                     routing_type: None,
                     mailbox_type: None,
                     item_id: None,
@@ -1825,10 +1925,23 @@ mod tests {
             &Recipient {
                 mailbox: Mailbox {
                     name: Some("Bob Test".into()),
-                    email_address: "bob@test.com".into(),
+                    email_address: Some("bob@test.com".into()),
                     routing_type: None,
                     mailbox_type: None,
                     item_id: None,
+                },
+            }
+        );
+
+        assert_eq!(
+            recipients.get(2).expect("no recipient at index 2"),
+            &Recipient {
+                mailbox: Mailbox {
+                    name: Some("Charlie Test".into()),
+                    email_address: None,
+                    routing_type: None,
+                    mailbox_type: None,
+                    item_id: None
                 },
             }
         );

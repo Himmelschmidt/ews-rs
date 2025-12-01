@@ -46,7 +46,7 @@ mod test {
             suppress_read_receipts: None,
             item_ids: vec![],
         };
-        assert_eq!(request.name(), "MarkAsRead");
+        assert_eq!(MarkAsRead::NAME, "MarkAsRead");
     }
 
     #[test]

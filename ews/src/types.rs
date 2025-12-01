@@ -25,6 +25,8 @@ pub mod get_item;
 pub mod get_mail_tips;
 pub mod get_server_time_zones;
 pub mod get_user_availability;
+pub mod mark_all_read;
+pub mod mark_as_junk;
 pub mod mark_as_read;
 pub mod move_folder;
 pub mod move_item;

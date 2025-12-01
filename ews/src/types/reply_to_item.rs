@@ -96,7 +96,7 @@ mod tests {
             to_recipients: Some(ArrayOfRecipients(vec![Recipient {
                 mailbox: Mailbox {
                     name: Some("John Doe".to_string()),
-                    email_address: "john.doe@example.com".to_string(),
+                    email_address: Some("john.doe@example.com".to_string()),
                     routing_type: None,
                     mailbox_type: None,
                     item_id: None,
