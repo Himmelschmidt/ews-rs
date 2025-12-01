@@ -7,7 +7,8 @@ use serde::Deserialize;
 use xml_struct::XmlSerialize;
 
 use crate::{
-    BaseFolderId, FieldOrder, Groups, ItemShape, Items, Restriction, View, MESSAGES_NS_URI,
+    BaseFolderId, FieldOrder, Groups, ItemShape, Items, Restriction, Traversal, View,
+    MESSAGES_NS_URI,
 };
 
 /// Defines a request to find items in mailbox.
@@ -32,23 +33,6 @@ pub struct FindItem {
     pub sort_order: Option<Vec<FieldOrder>>,
 
     pub parent_folder_ids: Vec<BaseFolderId>,
-}
-
-/// Defines whether the search finds items in folders or the folders' dumpsters.
-/// This attribute is required.
-#[derive(Clone, Debug, XmlSerialize)]
-#[xml_struct(text)]
-pub enum Traversal {
-    /// Returns only the identities of items in the folder.
-    Shallow,
-
-    /// Returns only the identities of items that are in a folder's dumpster.
-    /// Note that a soft-deleted traversal combined with a search restriction
-    /// will result in zero items returned even if there are items that match the search criteria.
-    SoftDeleted,
-
-    ///Returns only the identities of associated items in the folder.
-    Associated,
 }
 
 /// Contains the status and result of a single [`FindItem`] operation request.
