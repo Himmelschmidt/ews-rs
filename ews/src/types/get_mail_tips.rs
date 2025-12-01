@@ -125,24 +125,6 @@ mod tests {
 
     #[test]
     fn test_get_mail_tips_operation_name() {
-        let get_mail_tips = GetMailTips {
-            sending_as: Mailbox {
-                name: Some("Test User".into()),
-                email_address: Some("test@example.com".into()),
-                routing_type: None,
-                mailbox_type: None,
-                item_id: None,
-            },
-            recipients: vec![Mailbox {
-                name: Some("Recipient".into()),
-                email_address: Some("recipient@example.com".into()),
-                routing_type: None,
-                mailbox_type: None,
-                item_id: None,
-            }],
-            mail_tips_requested: MailTipsRequested::All,
-        };
-
         assert_eq!(GetMailTips::NAME, "GetMailTips");
     }
 

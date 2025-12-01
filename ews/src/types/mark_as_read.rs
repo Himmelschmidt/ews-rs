@@ -41,11 +41,6 @@ mod test {
 
     #[test]
     fn test_mark_as_read_operation_name() {
-        let request = MarkAsRead {
-            read_flag: true,
-            suppress_read_receipts: None,
-            item_ids: vec![],
-        };
         assert_eq!(MarkAsRead::NAME, "MarkAsRead");
     }
 
